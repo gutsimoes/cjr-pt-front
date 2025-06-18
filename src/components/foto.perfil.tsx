@@ -1,29 +1,24 @@
-import Image from 'next/image';
-import { useState } from 'react';
+import Image from 'next/image'
+import { useState } from 'react'
 
 interface FotoPerfilProps {
-  onImagemSelecionada?: (imagemBase64: string) => void;
+  onImagemSelecionada?: (file: File) => void
 }
 
 export default function FotoPerfil({ onImagemSelecionada }: FotoPerfilProps) {
-  const [preview, setPreview] = useState<string | null>(null);
-  const [erroImagem, setErroImagem] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null)
+  const [erroImagem, setErroImagem] = useState(false)
 
   const handleImagem = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const file = e.target.files?.[0]
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        setPreview(base64);
-        setErroImagem(false);
-        onImagemSelecionada?.(base64);
-      };
-      reader.readAsDataURL(file);
+      setPreview(URL.createObjectURL(file)) 
+      setErroImagem(false)
+      onImagemSelecionada?.(file) 
     }
-  };
+  }
 
-  const imagemSrc = !erroImagem && preview ? preview : '/default-avatar.png';
+  const imagemSrc = !erroImagem && preview ? preview : '/default-avatar.png'
 
   return (
     <div className="flex flex-col items-center mb-6">
@@ -49,5 +44,5 @@ export default function FotoPerfil({ onImagemSelecionada }: FotoPerfilProps) {
         />
       </label>
     </div>
-  );
+  )
 }
