@@ -2,8 +2,37 @@
 
 import { FiMail, FiLock } from 'react-icons/fi'
 import Link from 'next/link'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
+  const [email, setEmail] = useState('')
+  const [senha, setSenha] = useState('')
+  const [erro, setErro] = useState('')
+  const router = useRouter()
+
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault()
+    setErro('')
+
+    // Simulação de dados válidos
+    const emailValido = 'ash@gmail.com'
+    const senhaValida = '123'
+
+    if (email === emailValido && senha === senhaValida) {
+      const usuarioFake = {
+        id: 1,
+        nome: 'Ash Ketchum',
+        email,
+      }
+
+      localStorage.setItem('usuario', JSON.stringify(usuarioFake))
+      router.push(`/feedLogado/${usuarioFake.id}`)
+    } else {
+      setErro('E-mail ou senha inválidos')
+    }
+  }
+
   return (
     <main className="relative min-h-screen flex overflow-hidden font-sans bg-[#0f2606]">
       {/* Vídeo de fundo */}
@@ -38,7 +67,6 @@ export default function LoginPage() {
       {/* Lado direito - formulário */}
       <section className="w-full md:w-1/2 z-20 flex items-center justify-center p-6">
         <div className="w-full max-w-md bg-white/10 backdrop-blur-md border border-white/10 rounded-3xl shadow-xl p-8 text-center">
-          {/* Título */}
           <h1 className="text-4xl font-extrabold text-white mb-2 drop-shadow">
             Avaliação de
           </h1>
@@ -46,12 +74,13 @@ export default function LoginPage() {
             Professores
           </h2>
 
-          {/* Formulário */}
-          <form className="space-y-4 text-white">
+          <form onSubmit={handleLogin} className="space-y-4 text-white">
             <div className="relative">
               <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-[#224953]" />
               <input
                 type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Digite seu e-mail..."
                 className="w-full pl-10 pr-4 py-3 rounded-full bg-white/75 text-[#1c1c1c] placeholder-[#224953] font-medium border border-[#224953] focus:outline-none focus:ring-4 focus:ring-[#224953]/40"
               />
@@ -61,12 +90,15 @@ export default function LoginPage() {
               <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#224953]" />
               <input
                 type="password"
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
                 placeholder="Digite sua senha..."
                 className="w-full pl-10 pr-4 py-3 rounded-full bg-white/75 text-[#1c1c1c] placeholder-[#224953] font-medium border border-[#224953] focus:outline-none focus:ring-4 focus:ring-[#224953]/40"
               />
             </div>
 
-            {/* Botão de entrar */}
+            {erro && <p className="text-red-400 text-sm text-center">{erro}</p>}
+
             <div className="flex justify-center pt-4">
               <button
                 type="submit"

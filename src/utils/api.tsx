@@ -30,16 +30,15 @@ export async function cadastrarUsuario({
     });
     return response.data;
   } catch (error) {
-    // ⚠️ Aqui você repassa o erro pro componente tratar
     throw error;
   }
 }
 
-export function fileToBase64(file: File): Promise<string> {
+/*export function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result as string);
     reader.onerror = reject;
     reader.readAsDataURL(file);
-  });
-}
+  }); 
+}*/
