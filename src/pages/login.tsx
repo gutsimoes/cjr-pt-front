@@ -1,43 +1,31 @@
-'use client'
+'use client';
 
-import { FiMail, FiLock } from 'react-icons/fi'
-import Link from 'next/link'
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { FiMail, FiLock } from 'react-icons/fi';
+import Link from 'next/link';
+import { useState } from 'react';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [senha, setSenha] = useState('')
-  const [erro, setErro] = useState('')
-  const router = useRouter()
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  const [erro, setErro] = useState('');
 
-  async function handleLogin(e: React.FormEvent) {
-    e.preventDefault()
-    setErro('')
+  function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
 
-    // Simulação de dados válidos
-    const emailValido = 'ash@gmail.com'
-    const senhaValida = '123'
-
-    if (email === emailValido && senha === senhaValida) {
-      const usuarioFake = {
-        id: 1,
-        nome: 'Ash Ketchum',
-        email,
-      }
-
-      localStorage.setItem('usuario', JSON.stringify(usuarioFake))
-      router.push(`/feedLogado/${usuarioFake.id}`)
-    } else {
-      setErro('E-mail ou senha inválidos')
+    if (!email || !senha) {
+      setErro('Preencha todos os campos');
+      return;
     }
+
+    // lógica futura de autenticação será implementada aqui
+    console.log('Login enviado:', { email, senha });
   }
 
   return (
     <main className="relative min-h-screen flex overflow-hidden font-sans bg-[#0f2606]">
       {/* Vídeo de fundo */}
       <video
-        src="\fundo.mp4"
+        src="/fundo.mp4"
         className="absolute top-0 left-0 w-full h-full object-cover z-0"
         autoPlay
         loop
@@ -111,5 +99,5 @@ export default function LoginPage() {
         </div>
       </section>
     </main>
-  )
+  );
 }

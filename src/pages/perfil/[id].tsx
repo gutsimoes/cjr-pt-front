@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 interface Usuario {
     id: string;
@@ -9,48 +10,36 @@ interface Usuario {
     email: string;
 }
 
-export default function Perfil() {
+export default function FeedLogado() {
     const router = useRouter();
     const { id } = router.query;
+
     const [usuario, setUsuario] = useState<Usuario | null>(null);
-    const [autorizado, setAutorizado] = useState(false);
 
+
+    // teste com o banco de dados temporario 
     useEffect(() => {
-        const usuarioSalvo = localStorage.getItem('usuario');
-
-        if (!usuarioSalvo) {
-            router.push('/login');
-            return;
+        if (id) {
+            axios
+                .get(`http://localhost:3001/user/${id}`)
+                .then((res) => setUsuario(res.data))
+                .catch((err) => console.error('Erro ao buscar usuário:', err));
         }
+    }, [id]);
 
-        try {
-            const user: Usuario = JSON.parse(usuarioSalvo);
-
-            if (!user.id || (id && id !== String(user.id))) {
-                router.push('/login');
-                return;
-            }
-
-            setUsuario(user);
-            setAutorizado(true);
-        } catch (erro) {
-            console.error('Erro ao ler usuário:', erro);
-            router.push('/login');
-        }
-    }, [id, router]);
-
-    if (!autorizado || !usuario) {
-        return <p className="text-center mt-10 text-gray-600">Verificando autorização...</p>;
+    if (!usuario) {
+        return <p className="text-center text-gray-500 mt-10">Carregando dados do usuário...</p>;
     }
 
+
+    //onde editar 
     return (
-        <div className="min-h-screen bg-gray-50 p-6">
-            <h1 className="text-2xl font-bold mb-4 text-[#6B732F]">Perfil do Usuário</h1>
-            <div className="space-y-2 text-gray-800">
-                <p><strong>ID:</strong> {usuario.id}</p>
-                <p><strong>Nome:</strong> {usuario.nome}</p>
-                <p><strong>Email:</strong> {usuario.email}</p>
-            </div>
+        <div className="min-h-screen bg-gray-100 p-6">
+            <h1 className="text-2xl font-bold mb-4">
+                Perfil de {usuario.nome}
+            </h1>
+            <p className="text-gray-700 mb-2">ID: {usuario.id}</p>
+            <p className="text-gray-700">E-mail: {usuario.email}</p>
         </div>
     );
 }

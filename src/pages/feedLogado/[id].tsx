@@ -1,46 +1,40 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
-export default function Feed() {
+interface Usuario {
+    id: string;
+    nome: string;
+    email: string;
+}
+
+export default function FeedLogado() {
     const router = useRouter();
-    const [usuario, setUsuario] = useState<any>(null);
-    const [autorizado, setAutorizado] = useState(false);
+    const { id } = router.query;
+
+    const [usuario, setUsuario] = useState<Usuario | null>(null);
 
     useEffect(() => {
-        const usuarioSalvo = localStorage.getItem('usuario');
-
-        if (!usuarioSalvo) {
-            router.push('/login');
-            return;
+        if (id) {
+            axios
+                .get(`http://localhost:3001/user/${id}`)
+                .then((res) => setUsuario(res.data))
+                .catch((err) => console.error('Erro ao buscar usuário:', err));
         }
+    }, [id]);
 
-        const user = JSON.parse(usuarioSalvo);
-
-        setUsuario(user);
-        setAutorizado(true);
-    }, [router]);
-
-    if (!autorizado || !usuario) {
-        return (
-            <p className="text-center mt-10 text-gray-600">Verificando autorização...</p>
-        );
+    if (!usuario) {
+        return <p className="text-center text-gray-500 mt-10">Carregando dados do usuário...</p>;
     }
 
     return (
         <div className="min-h-screen bg-gray-100 p-6">
             <h1 className="text-2xl font-bold mb-4">
-                Bem-vindo, {usuario.nome}!
+                Feed do Usuário {usuario.nome} (ID: {usuario.id})
             </h1>
-            <p className="text-gray-700">Aqui é o seu feed logado.</p>
-
-            <Link href={`/perfil/${usuario.id}`}>
-                <button className="mt-4 px-4 py-2 bg-[#6B732F] text-white rounded hover:bg-[#5c6428] transition-colors">
-                    Ver meu perfil
-                </button>
-            </Link>
+            <p className="text-gray-700">E-mail: {usuario.email}</p>
         </div>
     );
 }
