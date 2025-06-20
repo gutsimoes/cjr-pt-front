@@ -31,7 +31,7 @@ export default function Perfil() {
     const token = localStorage.getItem('token');
     const payload = token ? decodeJwtPayload(token) : null;
 
-    // 🔐 Verifica se o token existe e se o ID do token bate com o da URL
+   
     if (!token || (id && String(payload?.sub) !== String(id))) {
       router.replace('/login');
       return;
