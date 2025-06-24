@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import Header from '../../components/Header';
 import Image from 'next/image';
+import CardPublicacao from '../../components/CardPublicacao';
 
 
 interface Usuario {
@@ -15,11 +16,23 @@ interface Usuario {
     curso: string;
 }
 
+interface Avaliacao {
+    id: number;
+    userId: number
+    professorID: number;
+    disciplinaID: number;
+    conteudo: string;
+    updatedAt: string;
+
+}
+
 export default function FeedLogado() {
     const router = useRouter();
     const { id } = router.query;
 
     const [usuario, setUsuario] = useState<Usuario | null>(null);
+
+    const [avaliacoes, setAvaliacoes] =  useState<Avaliacao[]>([])
 
 
     // teste com o banco de dados temporario 
@@ -29,6 +42,10 @@ export default function FeedLogado() {
                 .get(`http://localhost:3001/user/${id}`)
                 .then((res) => setUsuario(res.data))
                 .catch((err) => console.error('Erro ao buscar usuário:', err));
+            axios
+                .get(`http://localhost:3001/avaliacao?userId=${id}`)
+                .then((res) => setAvaliacoes(res.data))
+                .catch((err) => console.error("Erro ao buscar avaliações do usuário:", err))
         }
     }, [id]);
 
@@ -43,7 +60,7 @@ export default function FeedLogado() {
         
         <Header logado={true} />
         <main>
-        <div className="container mx-auto bg-gray-100">
+        <div className="container mx-auto bg-gray-100 max-w-4xl">
             <section className="mb-6 relative">
                 {/* fundo e informacoes perfil */}
                 <div className='bg-emerald-600 h-40 w-full'></div>
@@ -73,16 +90,28 @@ export default function FeedLogado() {
                 
             </section>
 
-
-
-
             <section>
                 {/* lista de card c/ avaliacoes */}
-                <div className='mt-6 bg-gray-100'>
 
+                <h2 className='text-xl mx-10 font-semibold text-black mb-4 '>Publicações</h2> 
+                <div className='space-y-4 mx-10'>
 
+                    {avaliacoes.length > 0? (
+                        avaliacoes.map((avaliacao) => (
+                            <CardPublicacao
+                                autor={usuario.nome}
+                                professor={String(avaliacao.professorID)}
+
+                                data={new Date(avaliacao.updatedAt).toLocaleDateString()}
+
+                                hora={new Date(avaliacao.updatedAt).toLocaleTimeString().substring(0,5)}
+                                conteudo={avaliacao.conteudo}
+                                comentarios={4} // ERRADO!! ESPERAR CRUD DE COMENTARIOS PARA IMPLEMENTAR CERTO
+                                disciplina={"Disciplina teste"} // crud disciplina?
+                            />
+                        ))
+                    ) : (<p className='text-center'>Não há avaliações publicadas ainda.</p>)}
                 </div>
-
 
                 
             </section>
