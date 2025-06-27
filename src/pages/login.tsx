@@ -1,54 +1,73 @@
-'use client';
+"use client"
 
-import { useState } from "react";
-import { useRouter } from "next/router";
-import { FiMail, FiLock } from "react-icons/fi";
-import Link from "next/link";
+import type React from "react"
+
+import { useState } from "react"
+import { useRouter } from "next/router"
+import { FiMail, FiLock } from "react-icons/fi"
+import Link from "next/link"
+import axios from "axios"
 
 function decodeJwtPayload(token: string): any {
-  const payload = token.split('.')[1];
-  return JSON.parse(atob(payload));
+  const payload = token.split(".")[1]
+  return JSON.parse(atob(payload))
 }
 
 export default function Login() {
-  const router = useRouter();
+  const router = useRouter()
 
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
-  const [erro, setErro] = useState('');
+  const [email, setEmail] = useState("")
+  const [senha, setSenha] = useState("")
+  const [erro, setErro] = useState("")
 
   async function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
+    e.preventDefault()
 
     try {
-      const resp = await fetch('http://localhost:3001/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, senha })
-      });
+      const response = await axios.post(
+        "http://localhost:3001/login",
+        {
+          email,
+          senha,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      )
 
-      if (!resp.ok) {
-        const err = await resp.json();
-        setErro(err.message || 'Email ou senha inválidos');
-        return;
-      }
-
-      const data = await resp.json();
-      const token = data.access_token;
+      const data = response.data
+      const token = data.access_token
 
       if (token) {
-        localStorage.setItem('token', token);
+        localStorage.setItem("token", token)
 
-        const payload = decodeJwtPayload(token);
-        const userId = payload.sub;
+        const payload = decodeJwtPayload(token)
+        const userId = payload.sub
 
-        router.push(`/feedLogado/${userId}`);
+        router.push(`/feedLogado/${userId}`)
       } else {
-        setErro('Token não encontrado na resposta');
+        setErro("Token não encontrado na resposta")
       }
     } catch (error) {
-      console.error('Erro no login:', error);
-      setErro('Erro na conexão com o servidor');
+      console.error("Erro no login:", error)
+
+      if (axios.isAxiosError(error)) {
+        // Erro de resposta HTTP
+        if (error.response) {
+          const errorMessage = error.response.data?.message || "Email ou senha inválidos"
+          setErro(errorMessage)
+        } else if (error.request) {
+          // Erro de rede
+          setErro("Erro na conexão com o servidor")
+        } else {
+          // Outro tipo de erro
+          setErro("Erro inesperado")
+        }
+      } else {
+        setErro("Erro na conexão com o servidor")
+      }
     }
   }
 
@@ -68,7 +87,10 @@ export default function Login() {
       <div className="hidden md:flex flex-col justify-center items-center w-1/2 z-20 text-white px-10 pt-20">
         <h2 className="text-3xl font-bold mb-4 text-center">Não tem uma conta?</h2>
         <p className="text-lg mb-4 text-center">Cadastre-se para participar da Liga!</p>
-        <Link href="/cadastro" className="px-6 py-2 rounded-full border border-white text-white hover:bg-white hover:text-[#0f2606] transition font-semibold">
+        <Link
+          href="/cadastro"
+          className="px-6 py-2 rounded-full border border-white text-white hover:bg-white hover:text-[#0f2606] transition font-semibold"
+        >
           Criar conta
         </Link>
       </div>
@@ -103,9 +125,7 @@ export default function Login() {
               />
             </div>
 
-            {erro && (
-              <p className="text-red-400 text-sm text-center">{erro}</p>
-            )}
+            {erro && <p className="text-red-400 text-sm text-center">{erro}</p>}
 
             <div className="flex justify-center pt-4">
               <button
@@ -119,5 +139,5 @@ export default function Login() {
         </div>
       </section>
     </main>
-  );
+  )
 }

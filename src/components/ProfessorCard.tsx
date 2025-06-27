@@ -14,7 +14,7 @@ export default function ProfessorCard({  nome, disciplina, imagem }: ProfessorCa
       {/* Efeito holográfico */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#ffa45d]/10  via-transparent to-[#043452]/10 rounded-3xl opacity-50 group-hover:opacity-70 transition-opacity duration-300" />
 
-      {/* Cantos decorativos estilo carta */}
+      {/* Cantos  estilo carta */}
       <div className="absolute top-3 left-3 w-4 h-4 border-l-2 border-t-2 border-[#ffa45d]/40 rounded-tl-lg" />
       <div className="absolute top-3 right-3 w-4 h-4 border-r-2 border-t-2 border-[#ffa45d]/40 rounded-tr-lg" />
       <div className="absolute bottom-3 left-3 w-4 h-4 border-l-2 border-b-2 border-[#ffa45d]/40 rounded-bl-lg" />
@@ -53,7 +53,7 @@ export default function ProfessorCard({  nome, disciplina, imagem }: ProfessorCa
         </p>
       </div>
 
-      {/* Botão estilo carta Pokémon */}
+      {/* Botão estilo */}
       <div className="flex justify-center mt-6">
         <button className="w-full h-[45px] bg-gradient-to-r from-[#ffa45d] to-amber-500 text-white font-bold rounded-2xl hover:from-[#ff9a47] hover:to-amber-600 transition-all duration-300 shadow-lg hover:shadow-xl border-2 border-white/50 hover:border-white/70 relative overflow-hidden">
           <span className="relative z-10">Ver Perfil</span>

@@ -1,6 +1,6 @@
 "use client"
 
-import Header from "../../components/Header"
+import Header from "../../components/Header-deslogado"
 import ProfessorCard from "../../components/ProfessorCard"
 
 export default function FeedDeslogado() {
