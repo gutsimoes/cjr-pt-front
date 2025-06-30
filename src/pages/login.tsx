@@ -1,12 +1,10 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/router"
-import { FiMail, FiLock } from "react-icons/fi"
+import { Mail, Lock } from "lucide-react"
 import Link from "next/link"
-import axios from "axios"
 
 function decodeJwtPayload(token: string): any {
   const payload = token.split(".")[1]
@@ -15,59 +13,50 @@ function decodeJwtPayload(token: string): any {
 
 export default function Login() {
   const router = useRouter()
-
   const [email, setEmail] = useState("")
   const [senha, setSenha] = useState("")
   const [erro, setErro] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
+    setIsLoading(true)
+    setErro("")
 
     try {
-      const response = await axios.post(
-        "http://localhost:3001/login",
-        {
+      const response = await fetch("http://localhost:3001/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
           email,
           senha,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-      )
+        }),
+      })
 
-      const data = response.data
-      const token = data.access_token
+      const data = await response.json()
+
+      if (!response.ok) {
+        setErro("Email ou senha inválidos"); // Ou qualquer outra mensagem que preferir
+        return;
+      }
+
+      const token = data.access_token || data.token
 
       if (token) {
         localStorage.setItem("token", token)
-
         const payload = decodeJwtPayload(token)
         const userId = payload.sub
-
         router.push(`/feedLogado/${userId}`)
       } else {
         setErro("Token não encontrado na resposta")
       }
     } catch (error) {
       console.error("Erro no login:", error)
-
-      if (axios.isAxiosError(error)) {
-        // Erro de resposta HTTP
-        if (error.response) {
-          const errorMessage = error.response.data?.message || "Email ou senha inválidos"
-          setErro(errorMessage)
-        } else if (error.request) {
-          // Erro de rede
-          setErro("Erro na conexão com o servidor")
-        } else {
-          // Outro tipo de erro
-          setErro("Erro inesperado")
-        }
-      } else {
-        setErro("Erro na conexão com o servidor")
-      }
+      setErro("Erro na conexão com o servidor")
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -81,7 +70,6 @@ export default function Login() {
         muted
         playsInline
       />
-
       <div className="absolute inset-0 bg-black/50 z-10" />
 
       <div className="hidden md:flex flex-col justify-center items-center w-1/2 z-20 text-white px-10 pt-20">
@@ -102,7 +90,7 @@ export default function Login() {
 
           <form onSubmit={handleLogin} className="space-y-4 text-white">
             <div className="relative">
-              <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-[#224953]" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-[#224953] w-5 h-5" />
               <input
                 type="email"
                 value={email}
@@ -110,11 +98,12 @@ export default function Login() {
                 placeholder="Digite seu e-mail..."
                 className="w-full pl-10 pr-4 py-3 rounded-full bg-white/75 text-black placeholder-[#224953] font-medium border border-[#224953] focus:outline-none focus:ring-4 focus:ring-[#224953]/40"
                 required
+                disabled={isLoading}
               />
             </div>
 
             <div className="relative">
-              <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#224953]" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#224953] w-5 h-5" />
               <input
                 type="password"
                 value={senha}
@@ -122,17 +111,19 @@ export default function Login() {
                 placeholder="Digite sua senha..."
                 className="w-full pl-10 pr-4 py-3 rounded-full bg-white/75 text-black placeholder-[#224953] font-medium border border-[#224953] focus:outline-none focus:ring-4 focus:ring-[#224953]/40"
                 required
+                disabled={isLoading}
               />
             </div>
 
-            {erro && <p className="text-red-400 text-sm text-center">{erro}</p>}
+            {erro && <p className="text-white text-sm text-center">{erro}</p>}
 
             <div className="flex justify-center pt-4">
               <button
                 type="submit"
-                className="w-40 h-12 bg-[#F27F3D] text-white font-semibold rounded-full hover:bg-[#914f5f] transition duration-300 shadow-md"
+                disabled={isLoading}
+                className="w-40 h-12 bg-[#F27F3D] text-white font-semibold rounded-full hover:bg-[#914f5f] transition duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Entrar
+                {isLoading ? "Entrando..." : "Entrar"}
               </button>
             </div>
           </form>

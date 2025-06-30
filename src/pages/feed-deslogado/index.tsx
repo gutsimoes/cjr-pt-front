@@ -1,33 +1,170 @@
 "use client"
 
+import { useState, useEffect } from "react"
+import axios from "axios"
 import Header from "../../components/Header-deslogado"
 import ProfessorCard from "../../components/ProfessorCard"
+import CampoBusca from "../../components/campo-busca"
+import BotaoOrdenar from "../../components/botao-ordenar"
+
+interface Disciplina {
+  id: number
+  nome: string
+}
+
+interface Professor {
+  id: number
+  nome: string
+  departamento: string
+  disciplinaID: number
+  createdAt: string
+  updatedAt: string
+  disciplina: Disciplina
+  imagem?: string | null
+}
 
 export default function FeedDeslogado() {
-  const professoresNovos = [
-    { id: 1, nome: "Ana Souza", disciplina: "Matemática", imagem: null },
-    { id: 2, nome: "Carlos Lima", disciplina: "História", imagem: null },
-    { id: 3, nome: "Beatriz Ramos", disciplina: "Química", imagem: null },
-    { id: 4, nome: "Lucas Ferreira", disciplina: "Física", imagem: null },
-  ]
+  const [professor, getProfessor] = useState<Professor[]>([])
+  const [professoresNovos, setProfessoresNovos] = useState<Professor[]>([])
+  const [todosProfessores, setTodosProfessores] = useState<Professor[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [erro, setErro] = useState("")
+  const [busca, setBusca] = useState("")
+  const [ordenacao, setOrdenacao] = useState("nome")
 
-  const todosProfessores = [
-    ...professoresNovos,
-    { id: 5, nome: "João Pedro", disciplina: "Biologia", imagem: null },
-    { id: 6, nome: "Marina Costa", disciplina: "Português", imagem: null },
-    { id: 7, nome: "Rafael Martins", disciplina: "Inglês", imagem: null },
-    { id: 8, nome: "Sofia Almeida", disciplina: "Geografia", imagem: null },
-  ]
+  async function buscarProfessores() {
+    try {
+      setIsLoading(true)
+      setErro("")
+      console.log("🚀 Iniciando requisição para professores...")
+
+      const response = await axios.get("http://localhost:3001/professor", {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      console.log("📡 Resposta recebida:", response.status, response.statusText)
+      console.log("📊 Dados recebidos:", response.data)
+
+      let dadosProfessores = response.data
+
+      if (response.data.professores) {
+        dadosProfessores = response.data.professores
+      }
+
+      if (Array.isArray(dadosProfessores)) {
+        console.log("✅ Professores recebidos:", dadosProfessores)
+        getProfessor(dadosProfessores)
+
+        // Separar novos professores (últimos 4 por data de criação)
+        const professorsSorted = [...dadosProfessores].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        )
+        setProfessoresNovos(professorsSorted.slice(0, 4))
+        setTodosProfessores(dadosProfessores)
+      } else {
+        console.error("❌ Dados inválidos recebidos")
+        setErro("Dados inválidos recebidos do servidor")
+        getProfessor([])
+      }
+    } catch (error) {
+      console.error("💥 Erro ao buscar professores:", error)
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          setErro(`Erro do servidor: ${error.response.status} - ${error.response.statusText}`)
+        } else if (error.request) {
+          setErro("Erro na conexão com o servidor")
+        } else {
+          setErro("Erro na configuração da requisição")
+        }
+      } else {
+        setErro("Erro desconhecido ao carregar professores")
+      }
+      getProfessor([])
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    buscarProfessores()
+  }, [])
+
+  // Função para tentar novamente
+  async function tentarNovamente() {
+    await buscarProfessores()
+  }
+
+  // Filtrar professores por busca
+  const professoresFiltrados = todosProfessores.filter((prof) => {
+    if (!busca.trim()) return true // Se não há busca, mostra todos
+
+    const nome = String(prof.nome || "").toLowerCase()
+    const disciplina = String(prof.disciplina?.nome || "").toLowerCase()
+    const departamento = String(prof.departamento || "").toLowerCase()
+    const termoBusca = busca.toLowerCase().trim()
+
+    return nome.includes(termoBusca) || disciplina.includes(termoBusca) || departamento.includes(termoBusca)
+  })
+
+
+
+  // Ordenar professores
+  const professoresOrdenados = [...professoresFiltrados].sort((a, b) => {
+    switch (ordenacao) {
+      case "nome":
+        return String(a.nome || "").localeCompare(String(b.nome || ""))
+      case "disciplina":
+        return String(a.disciplina?.nome || "").localeCompare(String(b.disciplina?.nome || ""))
+      case "departamento":
+        return String(a.departamento || "").localeCompare(String(b.departamento || ""))
+      case "id":
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      default:
+        return 0
+    }
+  })
+
+  const handleBuscar = (termo: string) => {
+    setBusca(termo)
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-orange-50">
+        <Header />
+        <div className="pt-20 flex flex-col items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#043452]"></div>
+          <p className="text-xl text-[#043452] mt-4">Carregando professores...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (erro) {
+    return (
+      <div className="min-h-screen bg-orange-50">
+        <Header />
+        <div className="pt-20 flex flex-col items-center justify-center">
+          <div className="bg-white p-8 rounded-lg shadow-md max-w-md mx-auto text-center">
+            <div className="text-red-500 text-5xl mb-4">⚠️</div>
+            <p className="text-lg font-medium mb-4 text-red-600">{erro}</p>
+            <button
+              onClick={tentarNovamente}
+              className="bg-[#043452] text-white px-6 py-3 rounded-lg hover:bg-[#032a3a] transition-colors font-medium"
+            >
+              Tentar novamente
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 relative overflow-hidden font-sans text-[#043452]">
-      <div className="absolute top-16 left-12 w-80 h-80 bg-[#ffa45d]/25 rounded-full blur-3xl opacity-50 animate-pulse" />
-      <div className="absolute bottom-24 right-12 w-96 h-96 bg-[#043452]/15 rounded-full blur-3xl opacity-40" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-amber-200/25 rounded-full blur-3xl" />
-
-      {/* Header */}
+    <div className="min-h-screen bg-orange-50">
       <Header />
-
       <main className="relative z-10 pt-32 px-6 pb-24 max-w-7xl mx-auto space-y-32">
         <section className="text-center max-w-4xl mx-auto group">
           <h1 className="text-6xl md:text-7xl font-extrabold leading-tight mb-8 tracking-tight">
@@ -39,7 +176,6 @@ export default function FeedDeslogado() {
             </span>
             Professores
           </h1>
-
           <p className="mt-6 text-2xl text-[#043452]/90 max-w-3xl mx-auto leading-relaxed font-medium">
             <span className="inline group-hover:hidden">Encontre aqui os melhores professores!!!</span>
             <span className="hidden group-hover:inline">
@@ -48,73 +184,74 @@ export default function FeedDeslogado() {
           </p>
         </section>
 
-        {/* Novos Professores */}
-        <section className="bg-white/40 backdrop-blur-2xl rounded-3xl p-12 border-2 border-white/60 shadow-2xl relative overflow-hidden">
-          {/* Efeito de destaque no bloco */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#ffa45d]/5 via-transparent to-[#043452]/5 rounded-3xl" />
-          <div className="absolute -top-2 -left-2 w-20 h-20 bg-[#ffa45d]/20 rounded-full blur-xl" />
-          <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-[#043452]/20 rounded-full blur-lg" />
-
-          <div className="relative z-10">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-16 gap-8">
-              <div className="relative">
-                <div className="absolute -left-4 top-0 w-1 h-full bg-gradient-to-b from-[#ffa45d] to-amber-500 rounded-full" />
-                <h2 className="text-5xl font-extrabold mb-4 text-[#043452]">Novos Professores</h2>
-                <p className="text-[#043452]/75 text-xl font-medium max-w-md">
-                  Conheça os novos talentos que estão sendo julgados
-                </p>
-              </div>
-
-              <div className="relative w-full lg:w-96">
-                <input
-                  type="text"
-                  placeholder="Buscar seu professor ideal..."
-                  className="w-full rounded-3xl border-2 border-[#ffa45d]/30 bg-white/50 backdrop-blur-md px-8 py-5 text-[#043452] placeholder-[#043452]/70 focus:outline-none focus:ring-4 focus:ring-[#ffa45d]/40 focus:border-[#ffa45d] transition-all duration-300 shadow-lg text-lg"
-                />
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#ffa45d]/20 rounded-full" />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-              {professoresNovos.map((prof) => (
-                <ProfessorCard key={prof.id} {...prof} />
-              ))}
+        {/* Novos Professores - SEM busca */}
+        <section className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl p-8 border border-[#ffa45d]/20">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
+            <div>
+              <h2 className="text-4xl font-bold text-[#043452] mb-2">Novos Professores</h2>
+              <p className="text-xl text-[#043452]/80">Conheça os novos talentos que estão sendo avaliados</p>
             </div>
           </div>
+
+          {professoresNovos.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {professoresNovos.map((prof) => (
+                <ProfessorCard
+                  key={prof.id}
+                  id={prof.id}
+                  nome={prof.nome}
+                  disciplina={prof.disciplina?.nome || "Disciplina não informada"}
+                  departamento={prof.departamento}
+                  imagem={prof.imagem || null}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-xl text-[#043452]/70">Nenhum professor novo encontrado</p>
+            </div>
+          )}
         </section>
 
-        {/* Todos os Professores */}
-        <section className="bg-white/40 backdrop-blur-2xl rounded-3xl p-12 border-2 border-white/60 shadow-2xl relative overflow-hidden">
-          {/* Efeito de destaque no bloco */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#043452]/5 via-transparent to-[#ffa45d]/5 rounded-3xl" />
-          <div className="absolute -top-2 -right-2 w-24 h-24 bg-[#043452]/15 rounded-full blur-xl" />
-          <div className="absolute -bottom-2 -left-2 w-18 h-18 bg-[#ffa45d]/15 rounded-full blur-lg" />
+        {/* Campo de Busca - ANTES de Todos os Professores */}
+        <div className="flex justify-center">
+          <CampoBusca valor={busca} onChange={setBusca} onBuscar={handleBuscar} />
+        </div>
 
-          <div className="relative z-10">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-16 gap-8">
-              <div className="relative">
-                <div className="absolute -left-4 top-0 w-1 h-full bg-gradient-to-b from-[#043452] to-[#043452]/70 rounded-full" />
-                <h2 className="text-5xl font-extrabold mb-4 text-[#043452]">Todos os Professores</h2>
-                <p className="text-[#043452]/75 text-xl font-medium max-w-md">
-                  Explore nossa comunidade completa de educadores
-                </p>
-              </div>
-
-              <button
-                className="flex items-center gap-4 px-10 py-4 rounded-3xl bg-[#043452]/20 backdrop-blur-sm text-[#043452] hover:bg-[#043452]/30 transition-all duration-300 font-bold border-2 border-[#043452]/30 shadow-lg hover:shadow-xl text-lg hover:scale-105"
-                type="button"
-              >
-                <span>Ordenar</span>
-                <div className="w-2 h-2 bg-[#043452] rounded-full" />
-              </button>
+        {/* Todos os Professores - COM busca */}
+        <section className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl p-8 border border-[#ffa45d]/20">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
+            <div>
+              <h2 className="text-4xl font-bold text-[#043452] mb-2">
+                Todos os Professores ({professoresFiltrados.length})
+              </h2>
+              <p className="text-xl text-[#043452]/80">Explore nossa comunidade completa de educadores</p>
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-              {todosProfessores.map((prof) => (
-                <ProfessorCard key={prof.id} {...prof} />
-              ))}
+            <div className="mt-6 lg:mt-0">
+              <BotaoOrdenar ordenacao={ordenacao} onChange={setOrdenacao} />
             </div>
           </div>
+
+          {professoresOrdenados.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {professoresOrdenados.map((prof) => (
+                <ProfessorCard
+                  key={prof.id}
+                  id={prof.id}
+                  nome={prof.nome}
+                  disciplina={prof.disciplina?.nome || "Disciplina não informada"}
+                  departamento={prof.departamento}
+                  imagem={prof.imagem || null}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-xl text-[#043452]/70">
+                {busca ? "Nenhum professor encontrado para sua busca" : "Nenhum professor encontrado"}
+              </p>
+            </div>
+          )}
         </section>
       </main>
     </div>

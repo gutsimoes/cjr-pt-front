@@ -1,12 +1,188 @@
 @import "tailwindcss";
 
+/* Cores principais do projeto */
 :root {
-  --background-color: #FFF8ED;
-  --foreground: #4d4545;
+  --cor-principal: #ffa45d;
+  --cor-secundaria: #043452;
+  --cor-fundo: #fff8ed;
 }
 
+/* Card do professor - versão simples */
+.card-professor {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  border: 2px solid #f0f0f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.card-professor:hover {
+  border-color: var(--cor-principal);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Input de busca - versão simples */
+.input-busca {
+  width: 100%;
+  border-radius: 12px;
+  border: 2px solid #e0e0e0;
+  background: white;
+  padding: 12px 16px;
+  color: var(--cor-secundaria);
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.input-busca:focus {
+  outline: none;
+  border-color: var(--cor-principal);
+}
+
+.input-busca::placeholder {
+  color: #999;
+}
+
+/* Botão de ordenar - versão simples */
+.botao-ordenar {
+  background: white;
+  color: var(--cor-secundaria);
+  font-weight: 600;
+  border-radius: 12px;
+  padding: 12px 20px;
+  border: 2px solid #e0e0e0;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.botao-ordenar:hover {
+  border-color: var(--cor-principal);
+  background: #fafafa;
+}
+
+/* Estilos globais básicos */
 body {
-  background: #FFF8ED;
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--cor-fundo);
+  color: var(--cor-secundaria);
+  font-family: Arial, sans-serif;
+}
+
+/* Botões básicos */
+.botao-primario {
+  background-color: var(--cor-principal);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.botao-primario:hover {
+  background-color: #ff8c42;
+}
+
+.botao-primario:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Cards de professor individuais */
+.professor-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+}
+
+.professor-card:hover {
+  border-color: var(--cor-principal);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Títulos */
+.titulo-principal {
+  color: var(--cor-secundaria);
+  font-weight: bold;
+}
+
+.titulo-secao {
+  color: var(--cor-secundaria);
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+/* Estados de loading e erro */
+.loading-spinner {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid var(--cor-principal);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.mensagem-erro {
+  color: #dc2626;
+  background: #fef2f2;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+}
+
+.mensagem-sucesso {
+  color: #059669;
+  background: #f0fdf4;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #bbf7d0;
+}
+
+/* Responsividade básica */
+@media (max-width: 768px) {
+  .card-professor {
+    padding: 16px;
+  }
+
+  .input-busca {
+    font-size: 16px; /* Evita zoom no iOS */
+  }
+
+  .botao-ordenar {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+}
+
+/* Utilitários simples */
+.texto-centro {
+  text-align: center;
+}
+
+.espacamento-vertical {
+  margin: 24px 0;
+}
+
+.sombra-leve {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.borda-arredondada {
+  border-radius: 8px;
 }
