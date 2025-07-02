@@ -120,39 +120,6 @@ export default function FeedDeslogado() {
     setBusca(termo)
   }
 
-  // carrega mostrando loading 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-orange-50">
-        <Header />
-        <div className="pt-20 flex flex-col items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#043452]"></div>
-          <p className="text-xl text-[#043452] mt-4">Carregando professores...</p>
-        </div>
-      </div>
-    )
-  }
-
-  // mostra mensagem de erro
-  if (erro) {
-    return (
-      <div className="min-h-screen bg-orange-50">
-        <Header />
-        <div className="pt-20 flex flex-col items-center justify-center">
-          <div className="bg-white p-8 rounded-lg shadow-md max-w-md mx-auto text-center">
-            <div className="text-red-500 text-5xl mb-4">⚠️</div>
-            <p className="text-lg font-medium mb-4 text-red-600">{erro}</p>
-            <button
-              onClick={tentarNovamente}
-              className="bg-[#043452] text-white px-6 py-3 rounded-lg hover:bg-[#032a3a] transition-colors font-medium"
-            >
-              Tentar novamente
-            </button>
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   // Página principal
   return (
