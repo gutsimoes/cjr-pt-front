@@ -61,12 +61,6 @@ export default function FeedLogado() {
     router.replace("/login")
   }
 
-  const irParaPerfil = () => {
-    if (usuario?.id) {
-      router.push(`/perfilLogado/${usuario.id}`)
-    }
-  }
-
   if (!usuario) {
     return (
       <div className="min-h-screen bg-[#0f2606]">
@@ -88,12 +82,6 @@ export default function FeedLogado() {
           <p className="text-lg mb-2">Email: {usuario.email}</p>
           <p className="text-md mb-8">ID do usuário: {usuario.id}</p>
 
-          <button
-            onClick={irParaPerfil}
-            className="px-6 py-2 bg-white text-[#0f2606] rounded-full font-semibold shadow hover:bg-gray-200 transition"
-          >
-            Ver meu perfil
-          </button>
 
           {/* Aqui você pode adicionar o conteúdo do feed */}
           <div className="mt-12 w-full">
