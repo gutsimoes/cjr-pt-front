@@ -50,9 +50,9 @@ export default function CampoBusca({
     <div className="relative w-full max-w-3xl lg:max-w-4xl mx-auto">
       <input
         type="text"
-        value={valorBusca}
-        onChange={(e) => handleChange(e.target.value)}
-        onKeyDown={handleKeyPress}
+        value={valorBusca} //texto atual do campo de busca
+        onChange={(e) => handleChange(e.target.value)} //recebe o texto de busca e muda
+        onKeyDown={handleKeyPress} // TECLA ENTER
         placeholder={placeholder}
         className="w-full rounded-full border-2 border-[#ffa45d]/30 bg-white/50 backdrop-blur-md px-8 py-6 pr-20 text-[#043452] placeholder-[#043452]/70 focus:outline-none focus:ring-4 focus:ring-[#ffa45d]/40 focus:border-[#ffa45d] transition-all duration-300 shadow-xl text-xl"
       />
