@@ -4,12 +4,14 @@ import type React from "react"
 import { useState } from "react"
 import { Search } from "lucide-react"
 
+//props o componente 
 interface CampoBuscaProps {
   valor?: string
   onChange?: (valor: string) => void
   onBuscar?: (valor: string) => void
   placeholder?: string
 }
+
 
 export default function CampoBusca({
   valor,
@@ -19,6 +21,7 @@ export default function CampoBusca({
 }: CampoBuscaProps) {
   const [buscaInterna, setBuscaInterna] = useState("")
 
+  // ve se tem alguma busca ou ta vazio
   const valorBusca = valor !== undefined ? valor : buscaInterna
 
   const handleChange = (novoValor: string) => {
@@ -29,12 +32,14 @@ export default function CampoBusca({
     }
   }
 
+  //busca com o valor atual.
   const handleBuscar = () => {
     if (onBuscar) {
       onBuscar(valorBusca)
     }
   }
 
+  //BUSCA NO ENTER
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       handleBuscar()

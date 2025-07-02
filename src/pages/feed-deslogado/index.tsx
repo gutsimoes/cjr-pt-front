@@ -1,4 +1,4 @@
-"use client"
+"use client" // indica que esse componente roda no lado do cliente (React Server Components)
 
 import { useState, useEffect } from "react"
 import axios from "axios"
@@ -7,6 +7,7 @@ import ProfessorCard from "../../components/ProfessorCard"
 import CampoBusca from "../../components/campo-busca"
 import BotaoOrdenar from "../../components/botao-ordenar"
 
+// Interfaces para tipagem dos dados recebidos da API
 interface Disciplina {
   id: number
   nome: string
@@ -23,7 +24,9 @@ interface Professor {
   imagem?: string | null
 }
 
+// Componente principal da página
 export default function FeedDeslogado() {
+  // Estados para controlar os dados e interações
   const [professor, getProfessor] = useState<Professor[]>([])
   const [professoresNovos, setProfessoresNovos] = useState<Professor[]>([])
   const [todosProfessores, setTodosProfessores] = useState<Professor[]>([])
@@ -32,21 +35,13 @@ export default function FeedDeslogado() {
   const [busca, setBusca] = useState("")
   const [ordenacao, setOrdenacao] = useState("nome")
 
+  //  faz a requisição do backend
   async function buscarProfessores() {
     try {
-      setIsLoading(true)
-      setErro("")
-      console.log("🚀 Iniciando requisição para professores...")
+      setIsLoading(true) // ativa o loading
+      setErro("") // limpa erros anteriores
 
-      const response = await axios.get("http://localhost:3001/professor", {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-
-      console.log("📡 Resposta recebida:", response.status, response.statusText)
-      console.log("📊 Dados recebidos:", response.data)
-
+      const response = await axios.get("http://localhost:3001/professor")
       let dadosProfessores = response.data
 
       if (response.data.professores) {
@@ -54,22 +49,20 @@ export default function FeedDeslogado() {
       }
 
       if (Array.isArray(dadosProfessores)) {
-        console.log("✅ Professores recebidos:", dadosProfessores)
-        getProfessor(dadosProfessores)
+        getProfessor(dadosProfessores) // salva os professores recebidos
 
-        // Separar novos professores (últimos 4 por data de criação)
+        // Ordena por data de criação (mais novos primeiro)
         const professorsSorted = [...dadosProfessores].sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         )
-        setProfessoresNovos(professorsSorted.slice(0, 4))
-        setTodosProfessores(dadosProfessores)
+        setProfessoresNovos(professorsSorted.slice(0, 4)) // pega os 4 mais novos
+        setTodosProfessores(dadosProfessores) // salva todos para busca/ordenação
       } else {
-        console.error("❌ Dados inválidos recebidos")
         setErro("Dados inválidos recebidos do servidor")
         getProfessor([])
       }
     } catch (error) {
-      console.error("💥 Erro ao buscar professores:", error)
+      // Tratamento de erro da requisição
       if (axios.isAxiosError(error)) {
         if (error.response) {
           setErro(`Erro do servidor: ${error.response.status} - ${error.response.statusText}`)
@@ -83,34 +76,30 @@ export default function FeedDeslogado() {
       }
       getProfessor([])
     } finally {
-      setIsLoading(false)
+      setIsLoading(false) // desativa o loading
     }
   }
 
+  // Chama a função buscarProfessores ao carregar o componente
   useEffect(() => {
     buscarProfessores()
   }, [])
 
-  // Função para tentar novamente
-  async function tentarNovamente() {
-    await buscarProfessores()
-  }
 
-  // Filtrar professores por busca
+  // filtro com base na busca 
   const professoresFiltrados = todosProfessores.filter((prof) => {
-    if (!busca.trim()) return true // Se não há busca, mostra todos
+    if (!busca.trim()) return true //  retorna todos se tiver vazio
 
     const nome = String(prof.nome || "").toLowerCase()
     const disciplina = String(prof.disciplina?.nome || "").toLowerCase()
     const departamento = String(prof.departamento || "").toLowerCase()
     const termoBusca = busca.toLowerCase().trim()
 
+    // Retorna se algum campo contém o termo buscado
     return nome.includes(termoBusca) || disciplina.includes(termoBusca) || departamento.includes(termoBusca)
   })
 
-
-
-  // Ordenar professores
+  // ordena os professores filtrados  com cada criterio sleecionado pelo botao ordenar
   const professoresOrdenados = [...professoresFiltrados].sort((a, b) => {
     switch (ordenacao) {
       case "nome":
@@ -126,10 +115,12 @@ export default function FeedDeslogado() {
     }
   })
 
+  // atualiza o estado de busca ao digitar
   const handleBuscar = (termo: string) => {
     setBusca(termo)
   }
 
+  // carrega mostrando loading 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-orange-50">
@@ -142,6 +133,7 @@ export default function FeedDeslogado() {
     )
   }
 
+  // mostra mensagem de erro
   if (erro) {
     return (
       <div className="min-h-screen bg-orange-50">
@@ -162,14 +154,15 @@ export default function FeedDeslogado() {
     )
   }
 
+  // Página principal
   return (
     <div className="min-h-screen bg-orange-50">
       <Header />
       <main className="relative z-10 pt-32 px-6 pb-24 max-w-7xl mx-auto space-y-32">
+        {/* Título principal com texto interativo com o mouse*/}
         <section className="text-center max-w-4xl mx-auto group">
           <h1 className="text-6xl md:text-7xl font-extrabold leading-tight mb-8 tracking-tight">
-            Encontre os
-            <br />
+            Encontre os<br />
             <span className="bg-gradient-to-r from-[#ffa45d] to-amber-500 bg-clip-text text-transparent transition-opacity duration-300">
               <span className="inline group-hover:hidden">Melhores&nbsp;</span>
               <span className="hidden group-hover:inline">Piores&nbsp;</span>
@@ -184,7 +177,7 @@ export default function FeedDeslogado() {
           </p>
         </section>
 
-        {/* Novos Professores - SEM busca */}
+        {/* Seção dos professores mais recentes */}
         <section className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl p-8 border border-[#ffa45d]/20">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
             <div>
@@ -213,12 +206,12 @@ export default function FeedDeslogado() {
           )}
         </section>
 
-        {/* Campo de Busca - ANTES de Todos os Professores */}
+        {/* Campo de busca */}
         <div className="flex justify-center">
           <CampoBusca valor={busca} onChange={setBusca} onBuscar={handleBuscar} />
         </div>
 
-        {/* Todos os Professores - COM busca */}
+        {/* Lista completa de professores, com ordenação e busca */}
         <section className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl p-8 border border-[#ffa45d]/20">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
             <div>
