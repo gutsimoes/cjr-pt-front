@@ -1,47 +1,52 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/router"
-import { Search } from "lucide-react"
-import Header from "../../components/Header-logado"
-import ProfessorCard from "../../components/ProfessorCard"
-import BotaoOrdenar from "../../components/botao-ordenar"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import { Search } from "lucide-react";
+import Header from "../../components/Header-logado";
+import ProfessorCard from "../../components/ProfessorCard";
+import BotaoOrdenar from "../../components/botao-ordenar";
 
 interface Disciplina {
-  id: number
-  nome: string
+  id: number;
+  nome: string;
 }
 
 interface Professor {
-  id: number
-  nome: string
-  departamento: string
-  disciplinaID: number
-  createdAt: string
-  updatedAt: string
-  disciplina: Disciplina
-  imagem?: string | null
+  id: number;
+  nome: string;
+  departamento: string;
+  disciplinaID: number;
+  createdAt: string;
+  updatedAt: string;
+  disciplina: Disciplina;
+  imagem?: string | null;
 }
 
 export default function FeedLogado() {
-  const router = useRouter()
-  const { id } = router.query
-  const [usuario, setUsuario] = useState<any>(null)
-  const [professores, setProfessores] = useState<Professor[]>([])
-  const [professoresNovos, setProfessoresNovos] = useState<Professor[]>([])
-  const [todosProfessores, setTodosProfessores] = useState<Professor[]>([])
-  const [valorBusca, setValorBusca] = useState("")
-  const [ordenacao, setOrdenacao] = useState("nome")
-  const [isLoading, setIsLoading] = useState(true)
-  const [modalOpen, setModalOpen] = useState(false)
+  const router = useRouter();
+  const { id } = router.query;
+  const [usuario, setUsuario] = useState<any>(null);
+  const [professores, setProfessores] = useState<Professor[]>([]);
+  const [professoresNovos, setProfessoresNovos] = useState<Professor[]>([]);
+  const [todosProfessores, setTodosProfessores] = useState<Professor[]>([]);
+  const [valorBusca, setValorBusca] = useState("");
+  const [ordenacao, setOrdenacao] = useState("nome");
+  const [isLoading, setIsLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  // modal form inputs
+  const [nome, setNome] = useState("");
+  const [departamento, setDepartamento] = useState("");
+  const [disciplinaID, setDisciplinaID] = useState("");
 
   useEffect(() => {
-    const token = localStorage.getItem("token")
-    const payload = token ? decodeJwtPayload(token) : null
+    const token = localStorage.getItem("token");
+    const payload = token ? decodeJwtPayload(token) : null;
 
     if (!token || (id && String(payload?.sub) !== String(id))) {
-      router.replace("/login")
-      return
+      router.replace("/login");
+      return;
     }
 
     if (id) {
@@ -50,70 +55,101 @@ export default function FeedLogado() {
       })
         .then(async (res) => {
           if (res.status === 401) {
-            router.replace("/login")
-            return
+            router.replace("/login");
+            return;
           }
 
-          const data = await res.json()
-          setUsuario(data)
+          const data = await res.json();
+          setUsuario(data);
         })
         .catch(() => {
-          router.replace("/login")
-        })
+          router.replace("/login");
+        });
+
+      fetch("http://localhost:3001/professor", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          setProfessores(data);
+          setTodosProfessores(data);
+
+          const sorted = [...data].sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+          setProfessoresNovos(sorted.slice(0, 4));
+          setIsLoading(false);
+        });
     }
-
-    const professoresData = [
-      { id: 1, nome: "Iais", departamento: "APC", disciplina: { id: 1, nome: "Programacao" }, createdAt: "2025-06-01", updatedAt: "", disciplinaID: 1, imagem: null },
-      { id: 2, nome: "João da Silva", departamento: "APC", disciplina: { id: 2, nome: "Algoritmos" }, createdAt: "2025-06-15", updatedAt: "", disciplinaID: 2, imagem: null },
-      { id: 3, nome: "Girinho", departamento: "APC", disciplina: { id: 3, nome: "Estruturas de Dados" }, createdAt: "2025-06-18", updatedAt: "", disciplinaID: 3, imagem: null },
-      { id: 4, nome: "Girão", departamento: "APC", disciplina: { id: 4, nome: "Redes de Computadores" }, createdAt: "2025-06-20", updatedAt: "", disciplinaID: 4, imagem: null },
-    ]
-    setProfessores(professoresData)
-    setTodosProfessores(professoresData)
-
-    const sorted = [...professoresData].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    )
-    setProfessoresNovos(sorted.slice(0, 4))
-
-    setIsLoading(false)
-  }, [id, router])
+  }, [id, router]);
 
   function decodeJwtPayload(token: string): any {
     try {
-      const payload = token.split(".")[1]
-      return JSON.parse(atob(payload))
+      const payload = token.split(".")[1];
+      return JSON.parse(atob(payload));
     } catch {
-      return null
+      return null;
     }
   }
 
-  const handleOpenModal = () => setModalOpen(true)
-  const handleCloseModal = () => setModalOpen(false)
+  const handleOpenModal = () => setModalOpen(true);
+  const handleCloseModal = () => setModalOpen(false);
   const handleLogout = () => {
-    localStorage.removeItem("token")
-    router.replace("/login")
-  }
+    localStorage.removeItem("token");
+    router.replace("/login");
+  };
 
-  const handleChange = (value: string) => setValorBusca(value)
-  const handleBuscar = () => console.log("Buscar por:", valorBusca)
+  const handleChange = (value: string) => setValorBusca(value);
+  const handleBuscar = () => console.log("Buscar por:", valorBusca);
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") handleBuscar()
-  }
+    if (e.key === "Enter") handleBuscar();
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const token = localStorage.getItem("token");
+
+    const response = await fetch("http://localhost:3001/professor", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        nome,
+        departamento,
+        disciplinaID: parseInt(disciplinaID),
+      }),
+    });
+
+    if (response.ok) {
+      alert("Professor criado com sucesso!");
+      setModalOpen(false);
+      window.location.reload();
+    } else {
+      const errorText = await response.text();
+      alert("Erro ao criar professor: " + errorText);
+    }
+  };
 
   const professoresFiltrados = todosProfessores.filter((prof) =>
     prof.nome.toLowerCase().includes(valorBusca.toLowerCase())
-  )
+  );
 
   const professoresOrdenados = [...professoresFiltrados].sort((a, b) => {
     switch (ordenacao) {
-      case "nome": return a.nome.localeCompare(b.nome)
-      case "disciplina": return (a.disciplina?.nome || "").localeCompare(b.disciplina?.nome || "")
-      case "departamento": return a.departamento.localeCompare(b.departamento)
-      case "id": return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      default: return 0
+      case "nome":
+        return a.nome.localeCompare(b.nome);
+      case "disciplina":
+        return (a.disciplina?.nome || "").localeCompare(b.disciplina?.nome || "");
+      case "departamento":
+        return a.departamento.localeCompare(b.departamento);
+      case "id":
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      default:
+        return 0;
     }
-  })
+  });
 
   if (!usuario) {
     return (
@@ -123,7 +159,7 @@ export default function FeedLogado() {
           <p className="text-gray-600 text-center text-lg animate-pulse">Carregando usuário...</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -202,10 +238,10 @@ export default function FeedLogado() {
         <div className="fixed inset-0 z-50 flex justify-center items-center bg-gray-900 bg-opacity-50">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
             <h2 className="text-2xl font-semibold text-[#043452] mb-4">Adicionar Novo Professor</h2>
-            <form>
-              <input type="text" placeholder="Nome do Professor" className="p-3 rounded-lg w-full mb-4 border border-gray-300" />
-              <input type="text" placeholder="Departamento" className="p-3 rounded-lg w-full mb-4 border border-gray-300" />
-              <input type="text" placeholder="Disciplina" className="p-3 rounded-lg w-full mb-4 border border-gray-300" />
+            <form onSubmit={handleSubmit}>
+              <input type="text" placeholder="Nome do Professor" value={nome} onChange={(e) => setNome(e.target.value)} className="p-3 rounded-lg w-full mb-4 border border-gray-300" />
+              <input type="text" placeholder="Departamento" value={departamento} onChange={(e) => setDepartamento(e.target.value)} className="p-3 rounded-lg w-full mb-4 border border-gray-300" />
+              <input type="number" placeholder="ID da Disciplina" value={disciplinaID} onChange={(e) => setDisciplinaID(e.target.value)} className="p-3 rounded-lg w-full mb-4 border border-gray-300" />
               <div className="flex justify-end">
                 <button type="button" onClick={handleCloseModal} className="bg-[#ff8c2a] text-white px-6 py-2 rounded-lg">Fechar</button>
                 <button type="submit" className="bg-[#43a047] text-white px-6 py-2 rounded-lg ml-4">Adicionar</button>
@@ -215,5 +251,5 @@ export default function FeedLogado() {
         </div>
       )}
     </div>
-  )
+  );
 }
