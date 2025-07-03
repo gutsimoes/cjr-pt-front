@@ -35,7 +35,7 @@ export default function FeedLogado() {
   const [isLoading, setIsLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
 
-  // modal form inputs
+// Campos do formulário para adicionar professor
   const [nome, setNome] = useState("");
   const [departamento, setDepartamento] = useState("");
   const [disciplinaID, setDisciplinaID] = useState("");
@@ -44,28 +44,31 @@ export default function FeedLogado() {
     const token = localStorage.getItem("token");
     const payload = token ? decodeJwtPayload(token) : null;
 
+    // Se não tiver token ou se o id do token não bate com o da URL, joga pra página de login
     if (!token || (id && String(payload?.sub) !== String(id))) {
       router.replace("/login");
       return;
     }
 
     if (id) {
+      // Pega as infos do usuário no backend
       fetch(`http://localhost:3001/user/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-        .then(async (res) => {
+        .then(async (res) => { // se der ruim, manda pro login
           if (res.status === 401) {
             router.replace("/login");
             return;
           }
 
           const data = await res.json();
-          setUsuario(data);
+          setUsuario(data); // guarda o usuário
         })
         .catch(() => {
-          router.replace("/login");
+          router.replace("/login");  // se der erro, manda pro login também
         });
 
+      // Pega a lista de professores
       fetch("http://localhost:3001/professor", {
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -74,6 +77,7 @@ export default function FeedLogado() {
           setProfessores(data);
           setTodosProfessores(data);
 
+          // Pega os 4 professores que chegaram por último
           const sorted = [...data].sort(
             (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           );
@@ -92,6 +96,7 @@ export default function FeedLogado() {
     }
   }
 
+  // Abrir e fechar o modal
   const handleOpenModal = () => setModalOpen(true);
   const handleCloseModal = () => setModalOpen(false);
   const handleLogout = () => {
@@ -99,12 +104,14 @@ export default function FeedLogado() {
     router.replace("/login");
   };
 
+  // Fazer logout: limpa o token e joga pra tela de login
   const handleChange = (value: string) => setValorBusca(value);
   const handleBuscar = () => console.log("Buscar por:", valorBusca);
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") handleBuscar();
   };
 
+  // Envia o formulário para criar um professor novo
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
@@ -124,14 +131,15 @@ export default function FeedLogado() {
 
     if (response.ok) {
       alert("Professor criado com sucesso!");
-      setModalOpen(false);
-      window.location.reload();
+      setModalOpen(false);  // fecha o modal
+      window.location.reload(); // recarrega a página pra atualizar a lista
     } else {
       const errorText = await response.text();
       alert("Erro ao criar professor: " + errorText);
     }
   };
 
+  // Filtra a lista de professores de acordo com o que foi digitado na busca
   const professoresFiltrados = todosProfessores.filter((prof) =>
     prof.nome.toLowerCase().includes(valorBusca.toLowerCase())
   );
@@ -151,6 +159,7 @@ export default function FeedLogado() {
     }
   });
 
+  // Enquanto não tiver os dados do usuário, mostra essa tela de carregamento
   if (!usuario) {
     return (
       <div className="min-h-screen bg-white">
@@ -161,7 +170,7 @@ export default function FeedLogado() {
       </div>
     );
   }
-
+  // A tela que o usuário vai ver
   return (
     <div className="min-h-screen bg-orange-50 relative">
       <Header isLoggedIn={true} userName={usuario.nome} onLogout={handleLogout} />
