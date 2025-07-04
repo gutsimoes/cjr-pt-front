@@ -4,10 +4,13 @@ import { useRouter, useParams } from "next/navigation"  // useParams para pegar 
 import { useEffect, useState } from "react"
 import axios from "axios"
 import HeaderLogado from "../../components/Header-logado"  // Ajuste o caminho conforme sua pasta
+import Image from "next/image"
+import CardPublicacao from "../../components/CardPublicacao"
+import ModalEditarPerfil from "../../components/ModalEditarPerfil"
 
 //props
 interface Usuario {
-  id: string
+  id: number
   nome: string
   email: string
   curso?: string
@@ -15,6 +18,27 @@ interface Usuario {
   fotoPerfil?: string
   dataCriacao?: string
   cidade?: string
+}
+
+interface Avaliacao {
+    id: number;
+    userId: number
+    professorID: number;
+    disciplinaID: number;
+    conteudo: string;
+    updatedAt: string;
+}
+
+interface Professor {
+  id: number
+  nome: string
+  disciplina: number
+  imagem: string | null
+}
+
+interface AvaliacaoCompleta extends Avaliacao {
+  professorNome : string;
+  n_comentarios : number;
 }
 
 //verifica token
@@ -42,6 +66,10 @@ export default function PerfilCompleto() {
   const [usuario, setUsuario] = useState<Usuario | null>(null)  // dados do usuário carregados do backend
   const [loading, setLoading] = useState(true) // carregadno
   const [error, setError] = useState<string | null>(null) // mensagens de erro
+  const [avaliacoes, setAvaliacoes] = useState<Avaliacao[]>([])
+  const [avaliacoesCompletas, setAvaliacoesCompletas] = useState<AvaliacaoCompleta[]>([]);
+  const [mostrarModal, setMostrarModal] = useState(false);
+
 
   //token errado manda pro perfil 
   useEffect(() => {
@@ -58,19 +86,44 @@ export default function PerfilCompleto() {
       return
     }
 
-    axios.get(`http://localhost:3001/user/${id}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(response => {
-        setUsuario(response.data)
-        setLoading(false)
+    const userRequest = axios.get(`http://localhost:3001/user/${id}`, {headers: { Authorization: `Bearer ${token}`} });
+    const avaliacoesRequest = axios.get(`http://localhost:3001/avaliacao/autor/${id}`);
+    const professoresRequest = axios.get(`http://localhost:3001/professor`);
+    const nComentariosRequest = axios.get(`http://localhost:3001/comentario/n_comentarios`);
+
+
+    Promise.all([userRequest, avaliacoesRequest, professoresRequest, nComentariosRequest])
+      .then(([userResponse, avaliacoesResponse, professoresResponse, nComentariosResponse]) => {
+        const usuarioData = userResponse.data;
+        const avaliacoesData = avaliacoesResponse.data;
+        const todosProfessores = professoresResponse.data;
+        const comentariosData = nComentariosResponse.data;
+        
+
+        const professorMap = todosProfessores.reduce((map : Record<number,string>, prof: Professor) => {
+          map[prof.id] = prof.nome; 
+          return map;
+        }, {});
+
+        const numeroComentariosMap = nComentariosResponse.data;
+
+        const avaliacoesCompletasData: AvaliacaoCompleta[] = avaliacoesData.map((avaliacao: Avaliacao) => ({
+          ...avaliacao,
+          professorNome: professorMap[avaliacao.professorID] || "Professor não encontrado",
+          n_comentarios: numeroComentariosMap[avaliacao.id] || 0
+        }));
+        
+        setUsuario(usuarioData);
+        setAvaliacoesCompletas(avaliacoesCompletasData);
       })
       .catch(err => {
-        console.error(err)
-        setError("Erro ao carregar perfil")
-        setLoading(false)
+        console.error(err);
+        setError("Erro ao carregar dados do perfil");
       })
-  }, [id, router])
+      .finally(() => {
+        setLoading(false);
+      });
+}, [id, router]);
 
   // leva de volta ao feed
   function voltarAoFeed() {
@@ -82,36 +135,79 @@ export default function PerfilCompleto() {
   if (error) return <div>{error}</div>
   if (!usuario) return <div>Usuário não encontrado</div>
 
-  // Renderização principal do perfil
-  return (
-    <div className="min-h-screen cor-fundo">
-      <HeaderLogado />
-      <main className="pt-24 text-black flex flex-col items-center justify-center font-sans p-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-3xl font-bold mb-4">Bem-vindo ao Perfil, {usuario.nome}!</h1>
-          <p className="text-lg mb-2">Email: {usuario.email}</p>
-          <p className="text-md mb-8">ID do usuário: {usuario.id}</p>
 
-          {/* Conteúdo do perfil */}
-          <div className="mt-12 w-full max-w-4xl text-left">
-            <h2 className="text-2xl font-semibold mb-6">Seu perfil</h2>
-            <div className="to-black rounded-lg p-6">
-              <p>Curso: {usuario.curso || "Não informado"}</p>
-              <p>Departamento: {usuario.departamento || "Não informado"}</p>
-              <p>Cidade: {usuario.cidade || "Não informado"}</p>
-              <p>Data de criação: {formatarData(usuario.dataCriacao)}</p>
-              {/* Você pode adicionar mais campos aqui */}
+  console.log(avaliacoes);
+  return(
+        <>
+        
+        <HeaderLogado/>
+        <main className="mt-18">
+        <div className="container mx-auto bg-gray-100 max-w-4xl">
+            <section className="mb-6 relative">
+                {/* fundo e informacoes perfil */}
+                <div className='bg-emerald-600 h-40 w-full'></div>
 
-              <button
-                onClick={voltarAoFeed}
-                className="px-10 py-4 bg-amber-400 text-white rounded-full font-semibold shadow hover:bg-amber-500 transition"
-              >
-                Feed
-              </button>
-            </div>
-          </div>
+                <div className='mx-26 -mt-22'>
+                <div className='flex justify-between'>
+                    <Image
+                        src='/default-avatar.png'
+                        alt="Foto de perfil"
+                        width={160}
+                        height={160}
+                        className="w-44 h-44 object-contain rounded-full overflow-hidden shadow-lg"
+                        >
+                    </Image>
+
+                    <button onClick={() => setMostrarModal(true)} className='bg-black text-white w-[200px] h-[50px] rounded-full mt-26 '>Editar Perfil</button>
+                    {mostrarModal && (
+                      <ModalEditarPerfil
+                        {...usuario}
+                        onClose={() => setMostrarModal(false)}
+                      />
+                    )}
+
+
+                </div >
+                    <h1 className="text-2xl font-bold mb-4 mt-4"> {usuario.nome} </h1>
+                    <h2 className='text-gray-700 mb-2'>{usuario.curso} / {usuario.departamento}</h2>
+                    <p className="text-gray-700">{usuario.email} </p>
+
+                </div>
+
+                
+            </section>
+
+            <section>
+                {/* lista de card c/ avaliacoes */}
+
+                <h2 className='text-xl mx-10 font-semibold text-black mb-4 '>Publicações</h2> 
+                <div className='space-y-4 mx-10'>
+
+                    {avaliacoesCompletas.length > 0? (
+                        avaliacoesCompletas.map((avaliacao) => (
+                            <CardPublicacao
+                          
+                                autor={usuario.nome}
+                                professor={avaliacao.professorNome}
+
+                                data={formatarData(avaliacao.updatedAt)}
+
+                                hora={new Date(avaliacao.updatedAt).toLocaleTimeString().substring(0,5)}
+                                conteudo={avaliacao.conteudo}
+                                comentarios={avaliacao.n_comentarios}
+                                disciplina={"Disciplina"} //arrumar
+                            />
+                        ))
+                    ) : (<p className='text-center'>Não há avaliações publicadas ainda.</p>)}
+                </div>
+
+                
+            </section>
+            
+            
         </div>
-      </main>
-    </div>
-  )
+        </main>
+        
+        </>
+    );
 }
