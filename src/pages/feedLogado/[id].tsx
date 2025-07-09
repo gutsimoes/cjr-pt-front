@@ -6,6 +6,7 @@ import { Search } from "lucide-react";
 import Header from "../../components/Header-logado";
 import ProfessorCard from "../../components/ProfessorCard";
 import BotaoOrdenar from "../../components/botao-ordenar";
+import ModalCriarAvaliacao from "../../components/criar-avaliacao";
 
 interface Disciplina {
   id: number;
@@ -34,8 +35,15 @@ export default function FeedLogado() {
   const [ordenacao, setOrdenacao] = useState("nome");
   const [isLoading, setIsLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+  const [modalCriarAvaliacaoOpen, setModalCriarAvaliacaoOpen] = useState(false);
+
+  const handleAvaliacaoSuccess = () => {
+    alert("Avaliação criada com sucesso!");
+    setModalCriarAvaliacaoOpen(false);
+  };
 
 // Campos do formulário para adicionar professor
+
   const [nome, setNome] = useState("");
   const [departamento, setDepartamento] = useState("");
   const [disciplinaID, setDisciplinaID] = useState("");
@@ -60,15 +68,14 @@ export default function FeedLogado() {
             router.replace("/login");
             return;
           }
-
           const data = await res.json();
           setUsuario(data); // guarda o usuário
         })
         .catch(() => {
-          router.replace("/login");  // se der erro, manda pro login também
+          router.replace("/login"); // se der erro, manda pro login também
         });
 
-      // Pega a lista de professores
+        // Pega a lista de professores
       fetch("http://localhost:3001/professor", {
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -96,7 +103,7 @@ export default function FeedLogado() {
     }
   }
 
-  // Abrir e fechar o modal
+   // abrir e fechar o modal
   const handleOpenModal = () => setModalOpen(true);
   const handleCloseModal = () => setModalOpen(false);
   const handleLogout = () => {
@@ -104,14 +111,14 @@ export default function FeedLogado() {
     router.replace("/login");
   };
 
-  // Fazer logout: limpa o token e joga pra tela de login
+  // fazer logout: limpa o token e joga pra tela de login
   const handleChange = (value: string) => setValorBusca(value);
   const handleBuscar = () => console.log("Buscar por:", valorBusca);
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") handleBuscar();
   };
 
-  // Envia o formulário para criar um professor novo
+   // envia o formulário para criar um professor novo
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
@@ -131,7 +138,7 @@ export default function FeedLogado() {
 
     if (response.ok) {
       alert("Professor criado com sucesso!");
-      setModalOpen(false);  // fecha o modal
+      setModalOpen(false); // fecha o modal
       window.location.reload(); // recarrega a página pra atualizar a lista
     } else {
       const errorText = await response.text();
@@ -159,7 +166,7 @@ export default function FeedLogado() {
     }
   });
 
-  // Enquanto não tiver os dados do usuário, mostra essa tela de carregamento
+   // Enquanto não tiver os dados do usuário, mostra essa tela de carregamento
   if (!usuario) {
     return (
       <div className="min-h-screen bg-white">
@@ -170,11 +177,13 @@ export default function FeedLogado() {
       </div>
     );
   }
-  // A tela que o usuário vai ver
+
+  // a tela que o usuário vai ver
   return (
     <div className="min-h-screen bg-orange-50 relative">
       <Header isLoggedIn={true} userName={usuario.nome} onLogout={handleLogout} />
 
+     {/* Título de bem-vindo, usuario*/}
       <main className="relative z-0 pt-32 px-6 pb-24 max-w-7xl mx-auto space-y-32">
         <section className="text-center max-w-4xl mx-auto">
           <h1 className="text-6xl md:text-7xl font-extrabold leading-tight mb-4 tracking-tight">
@@ -185,6 +194,7 @@ export default function FeedLogado() {
           </p>
         </section>
 
+      {/* Seção dos professores mais recentes */}
         <section className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl p-8 border border-[#ffa45d]/20">
           <h2 className="text-4xl font-bold text-[#043452] mb-2">Novos Professores</h2>
           <p className="text-xl text-[#043452]/80 mb-6">Conheça os novos talentos que estão sendo avaliados</p>
@@ -195,6 +205,7 @@ export default function FeedLogado() {
           </div>
         </section>
 
+     {/* bloco de busca de professores com input e botão de pesquisa*/}
         <div className="relative w-full max-w-3xl lg:max-w-4xl mx-auto">
           <input
             type="text"
@@ -213,16 +224,26 @@ export default function FeedLogado() {
           </button>
         </div>
 
-        <div className="relative w-full max-w-xs mx-auto mt-6">
+        {/* botões "novo professor" e "nova avaliaçao" lado a lado*/}
+        <div className="relative w-full max-w-2xl mx-auto mt-6 flex flex-col sm:flex-row justify-center items-center gap-4">
           <button
-            onClick={handleOpenModal}
-            className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#043452] hover:bg-[#06567b] text-white font-semibold text-lg shadow-md transition-all duration-300"
+            onClick={handleOpenModal} // abre o modal de criação de professor
+            className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#043452] hover:bg-[#06567b] text-white font-semibold text-lg shadow-md transition-all duration-300"
           >
             <span className="text-xl font-bold">+</span>
             Novo Professor
           </button>
+
+          <button
+            onClick={() => setModalCriarAvaliacaoOpen(true)}
+            className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#ffa45d] hover:bg-[#ff9142] text-white font-semibold text-lg shadow-md transition-all duration-300"
+          >
+            <span className="text-xl font-bold">+</span>
+            Nova Avaliação
+          </button>
         </div>
 
+       {/* listagem de todos os professores e botão para ordenar*/}
         <section className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl p-8 border border-[#ffa45d]/20">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
             <div>
@@ -259,6 +280,15 @@ export default function FeedLogado() {
           </div>
         </div>
       )}
+
+      <ModalCriarAvaliacao
+        isOpen={modalCriarAvaliacaoOpen}
+        onClose={() => setModalCriarAvaliacaoOpen(false)}
+        onSuccess={handleAvaliacaoSuccess}
+        userId={parseInt(id as string)}
+        professorId={1}
+        disciplinaId={1}
+      />
     </div>
   );
 }
