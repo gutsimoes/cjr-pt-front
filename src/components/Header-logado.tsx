@@ -11,7 +11,7 @@ export default function HeaderLogado() {
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split(".")[1]))
-        router.push(`/perfilLogado/${payload.sub}`)
+        router.push(`/perfil/${payload.sub}`)
       } catch (error) {
         console.error("Erro ao decodificar token:", error)
       }
