@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import { User, LogOut } from "lucide-react"
+import Link from "next/link"
 
 export default function HeaderLogado() {
   const router = useRouter()
@@ -28,7 +29,9 @@ export default function HeaderLogado() {
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
         {/* Logo */}
-        <img src="/logopokemon.png" alt="Logo" className="h-14 w-auto drop-shadow-lg" />
+        <Link href="/" className="flex items-center">
+          <img src="/logopokemon.png" alt="Logo" className="h-14 w-auto drop-shadow-lg" />
+        </Link>
 
         {/* Ações (ícone usuário e logout) */}
         <div className="flex items-center gap-3">

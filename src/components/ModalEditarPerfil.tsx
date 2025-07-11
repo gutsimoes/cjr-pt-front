@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import axios from 'axios'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 
 
 interface ModalProps {
@@ -69,8 +70,14 @@ export default function ModalEditarPerfil({
         data: { senha: deletePassword.trim() }
       })
 
+      localStorage.removeItem("token")
+      
+
       onSuccess()
       onClose()
+
+      window.location.href = '/'
+
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erro ao excluir perfil')
     } finally {
