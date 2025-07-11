@@ -12,6 +12,7 @@ interface CardProps {
     comentarios : number;
     disciplina : string;
     fotoAutorUrl?: string;
+    permissaoEditar: boolean;
 
     onEdit?: (id: string) => void;
     onDelete?: (id: string) => void; 
@@ -20,7 +21,7 @@ interface CardProps {
 
 
 
-export default function CardPublicacao({autor, professor, data, hora, conteudo,  comentarios, fotoAutorUrl, disciplina, onEdit, onDelete } : CardProps) {
+export default function CardPublicacao({autor, professor, data, hora, conteudo,  comentarios, fotoAutorUrl, disciplina, permissaoEditar, onEdit, onDelete } : CardProps) {
     const imagemSrc = fotoAutorUrl ? fotoAutorUrl : '/default-avatar.png'
     
     return (
@@ -45,10 +46,14 @@ export default function CardPublicacao({autor, professor, data, hora, conteudo, 
                 <span>
                     <button className="text-gray">💬 {comentarios} comentários</button>
                 </span>
+
+                {permissaoEditar && 
                 <div className="flex space-x-2 pr-8">
                     <div>editar</div>
                     <div>excluir</div>
                 </div>
+                }
+                
             </div>
             </div>
             </div>

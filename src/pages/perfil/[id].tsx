@@ -37,9 +37,17 @@ interface Professor {
   imagem: string | null
 }
 
+interface Disciplina {
+    id: number;
+    nome: string;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
 interface AvaliacaoCompleta extends Avaliacao {
   professorNome : string;
   n_comentarios : number;
+  disciplina : string;
 }
 
 interface ViewState {
@@ -113,15 +121,24 @@ export default function PerfilCompleto() {
     const avaliacoesRequest = axios.get(`http://localhost:3001/avaliacao/autor/${id}`);
     const professoresRequest = axios.get(`http://localhost:3001/professor`);
     const nComentariosRequest = axios.get(`http://localhost:3001/comentario/n_comentarios`);
+    const disciplinasRequest = axios.get(`http://localhost:3001/disciplina/`);
 
 
-    Promise.all([userRequest, avaliacoesRequest, professoresRequest, nComentariosRequest])
-      .then(([userResponse, avaliacoesResponse, professoresResponse, nComentariosResponse]) => {
+    Promise.all([userRequest, avaliacoesRequest, professoresRequest, nComentariosRequest, disciplinasRequest])
+      .then(([userResponse, avaliacoesResponse, professoresResponse, nComentariosResponse, disciplinasResponse]) => {
         const usuarioData = userResponse.data;
         const avaliacoesData = avaliacoesResponse.data;
         const todosProfessores = professoresResponse.data;
-        const comentariosData = nComentariosResponse.data;
-        
+        const disciplinasData = disciplinasResponse.data;
+
+        console.log(disciplinasData)
+
+        const disciplinasMap: Record<number,string> = disciplinasData.reduce((map : Record<number,string>, disciplina: Disciplina)=> {
+            map[disciplina.id] = disciplina.nome;
+            return map;
+        }, {})
+
+        console.log(disciplinasMap);
 
         const professorMap = todosProfessores.reduce((map : Record<number,string>, prof: Professor) => {
           map[prof.id] = prof.nome; 
@@ -133,7 +150,9 @@ export default function PerfilCompleto() {
         const avaliacoesCompletasData: AvaliacaoCompleta[] = avaliacoesData.map((avaliacao: Avaliacao) => ({
           ...avaliacao,
           professorNome: professorMap[avaliacao.professorID] || "Professor não encontrado",
-          n_comentarios: numeroComentariosMap[avaliacao.id] || 0
+          n_comentarios: numeroComentariosMap[avaliacao.id] || 0,
+          disciplina : disciplinasMap[avaliacao.disciplinaID] || "Discilina não encontrada",
+          
         }));
         
         setUsuario(usuarioData);
@@ -235,7 +254,8 @@ export default function PerfilCompleto() {
                                 hora={new Date(avaliacao.updatedAt).toLocaleTimeString().substring(0,5)}
                                 conteudo={avaliacao.conteudo}
                                 comentarios={avaliacao.n_comentarios}
-                                disciplina={"Disciplina"} //arrumar
+                                disciplina={avaliacao.disciplina} //arrumar
+                                permissaoEditar={viewState.proprioPerfil}
                             />
                         ))
                     ) : (<p className='text-center'>Não há avaliações publicadas ainda.</p>)}
