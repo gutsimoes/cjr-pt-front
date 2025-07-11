@@ -1,4 +1,4 @@
-"use client" // indica que esse componente roda no lado do cliente (React Server Components)
+"use client"
 
 import { useState, useEffect } from "react"
 import axios from "axios"
@@ -88,18 +88,18 @@ export default function FeedDeslogado() {
 
   // filtro com base na busca 
   const professoresFiltrados = todosProfessores.filter((prof) => {
-    if (!busca.trim()) return true //  retorna todos se tiver vazio
+    if (!busca.trim()) return true // Retorna todos se tiver vazio
 
     const nome = String(prof.nome || "").toLowerCase()
     const disciplina = String(prof.disciplina?.nome || "").toLowerCase()
     const departamento = String(prof.departamento || "").toLowerCase()
     const termoBusca = busca.toLowerCase().trim()
 
-    // Retorna se algum campo contém o termo buscado
+    // retorna se algum campo contém o termo buscado
     return nome.includes(termoBusca) || disciplina.includes(termoBusca) || departamento.includes(termoBusca)
   })
 
-  // ordena os professores filtrados  com cada criterio sleecionado pelo botao ordenar
+  // ordena os professores filtrados 
   const professoresOrdenados = [...professoresFiltrados].sort((a, b) => {
     switch (ordenacao) {
       case "nome":
@@ -110,10 +110,13 @@ export default function FeedDeslogado() {
         return String(a.departamento || "").localeCompare(String(b.departamento || ""))
       case "id":
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      case "mais_antigo":
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       default:
         return 0
     }
   })
+
 
   // atualiza o estado de busca ao digitar
   const handleBuscar = (termo: string) => {

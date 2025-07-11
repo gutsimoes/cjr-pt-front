@@ -42,7 +42,7 @@ export default function FeedLogado() {
     setModalCriarAvaliacaoOpen(false);
   };
 
-// Campos do formulário para adicionar professor
+  // Campos do formulário para adicionar professor
 
   const [nome, setNome] = useState("");
   const [departamento, setDepartamento] = useState("");
@@ -75,7 +75,7 @@ export default function FeedLogado() {
           router.replace("/login"); // se der erro, manda pro login também
         });
 
-        // Pega a lista de professores
+      // Pega a lista de professores
       fetch("http://localhost:3001/professor", {
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -103,7 +103,7 @@ export default function FeedLogado() {
     }
   }
 
-   // abrir e fechar o modal
+  // abrir e fechar o modal
   const handleOpenModal = () => setModalOpen(true);
   const handleCloseModal = () => setModalOpen(false);
   const handleLogout = () => {
@@ -118,7 +118,7 @@ export default function FeedLogado() {
     if (e.key === "Enter") handleBuscar();
   };
 
-   // envia o formulário para criar um professor novo
+  // envia o formulário para criar um professor novo
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
@@ -154,19 +154,22 @@ export default function FeedLogado() {
   const professoresOrdenados = [...professoresFiltrados].sort((a, b) => {
     switch (ordenacao) {
       case "nome":
-        return a.nome.localeCompare(b.nome);
+        return String(a.nome || "").localeCompare(String(b.nome || ""))
       case "disciplina":
-        return (a.disciplina?.nome || "").localeCompare(b.disciplina?.nome || "");
+        return String(a.disciplina?.nome || "").localeCompare(String(b.disciplina?.nome || ""))
       case "departamento":
-        return a.departamento.localeCompare(b.departamento);
+        return String(a.departamento || "").localeCompare(String(b.departamento || ""))
       case "id":
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      case "mais_antigo":
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       default:
-        return 0;
+        return 0
     }
-  });
+  })
 
-   // Enquanto não tiver os dados do usuário, mostra essa tela de carregamento
+
+  // Enquanto não tiver os dados do usuário, mostra essa tela de carregamento
   if (!usuario) {
     return (
       <div className="min-h-screen bg-white">
@@ -183,7 +186,7 @@ export default function FeedLogado() {
     <div className="min-h-screen bg-orange-50 relative">
       <Header isLoggedIn={true} userName={usuario.nome} onLogout={handleLogout} />
 
-     {/* Título de bem-vindo, usuario*/}
+      {/* Título de bem-vindo, usuario*/}
       <main className="relative z-0 pt-32 px-6 pb-24 max-w-7xl mx-auto space-y-32">
         <section className="text-center max-w-4xl mx-auto">
           <h1 className="text-6xl md:text-7xl font-extrabold leading-tight mb-4 tracking-tight">
@@ -194,7 +197,7 @@ export default function FeedLogado() {
           </p>
         </section>
 
-      {/* Seção dos professores mais recentes */}
+        {/* Seção dos professores mais recentes */}
         <section className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl p-8 border border-[#ffa45d]/20">
           <h2 className="text-4xl font-bold text-[#043452] mb-2">Novos Professores</h2>
           <p className="text-xl text-[#043452]/80 mb-6">Conheça os novos talentos que estão sendo avaliados</p>
@@ -205,7 +208,7 @@ export default function FeedLogado() {
           </div>
         </section>
 
-     {/* bloco de busca de professores com input e botão de pesquisa*/}
+        {/* bloco de busca de professores com input e botão de pesquisa*/}
         <div className="relative w-full max-w-3xl lg:max-w-4xl mx-auto">
           <input
             type="text"
@@ -243,7 +246,7 @@ export default function FeedLogado() {
           </button>
         </div>
 
-       {/* listagem de todos os professores e botão para ordenar*/}
+        {/* listagem de todos os professores e botão para ordenar*/}
         <section className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl p-8 border border-[#ffa45d]/20">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
             <div>
