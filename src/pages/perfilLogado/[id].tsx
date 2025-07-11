@@ -1,11 +1,8 @@
-"use client"
-
-import { useRouter, useParams } from "next/navigation"  // useParams para pegar params no App Router
+import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import axios from "axios"
-import HeaderLogado from "../../components/Header-logado"  // Ajuste o caminho conforme sua pasta
+import HeaderLogado from "../../components/Header-logado"
 
-//props
 interface Usuario {
   id: string
   nome: string
@@ -17,7 +14,6 @@ interface Usuario {
   cidade?: string
 }
 
-//verifica token
 function decodeJwtPayload(token: string): any {
   try {
     const payload = token.split(".")[1]
@@ -27,7 +23,6 @@ function decodeJwtPayload(token: string): any {
   }
 }
 
-// formata a data que vem do backend (yyyy‑mm‑dd…) para dd/mm/aaaa
 function formatarData(dataString?: string) {
   if (!dataString) return "Não informado"
   const data = new Date(dataString)
@@ -35,54 +30,34 @@ function formatarData(dataString?: string) {
 }
 
 export default function PerfilCompleto() {
-  const router = useRouter() // rota dinamica
-  const params = useParams() // Pega parâmetros 
-  const id = params?.id // Pega o id 
+  const router = useRouter()
+  const { id } = router.query
+  const [usuario, setUsuario] = useState<Usuario | null>(null)
 
-  const [usuario, setUsuario] = useState<Usuario | null>(null)  // dados do usuário carregados do backend
-  const [loading, setLoading] = useState(true) // carregadno
-  const [error, setError] = useState<string | null>(null) // mensagens de erro
-
-  //token errado manda pro perfil 
   useEffect(() => {
-    const token = localStorage.getItem("token")
-    if (!token) {
-      router.replace("/login")
-      return
-    }
-    const payload = decodeJwtPayload(token)
+    if (!id) return
 
-    // verifica se é o cara do perfil que ta vendo o perfil
-    if (!payload || String(payload.sub) !== String(id)) {
+    const token = localStorage.getItem("token")
+    const payload = decodeJwtPayload(token || "")
+
+    if (!token || !payload || String(payload.sub) !== String(id)) {
       router.replace("/login")
       return
     }
 
     axios.get(`http://localhost:3001/user/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
+    }).then(res => {
+      setUsuario(res.data)
     })
-      .then(response => {
-        setUsuario(response.data)
-        setLoading(false)
-      })
-      .catch(err => {
-        console.error(err)
-        setError("Erro ao carregar perfil")
-        setLoading(false)
-      })
-  }, [id, router])
+  }, [id])
 
-  // leva de volta ao feed
   function voltarAoFeed() {
     router.push(`/feedLogado/${id}`)
   }
 
+  if (!usuario) return null
 
-  if (loading) return <div>Carregando perfil...</div>
-  if (error) return <div>{error}</div>
-  if (!usuario) return <div>Usuário não encontrado</div>
-
-  // Renderização principal do perfil
   return (
     <div className="min-h-screen cor-fundo">
       <HeaderLogado />
@@ -92,7 +67,6 @@ export default function PerfilCompleto() {
           <p className="text-lg mb-2">Email: {usuario.email}</p>
           <p className="text-md mb-8">ID do usuário: {usuario.id}</p>
 
-          {/* Conteúdo do perfil */}
           <div className="mt-12 w-full max-w-4xl text-left">
             <h2 className="text-2xl font-semibold mb-6">Seu perfil</h2>
             <div className="to-black rounded-lg p-6">
@@ -100,7 +74,6 @@ export default function PerfilCompleto() {
               <p>Departamento: {usuario.departamento || "Não informado"}</p>
               <p>Cidade: {usuario.cidade || "Não informado"}</p>
               <p>Data de criação: {formatarData(usuario.dataCriacao)}</p>
-              {/* Você pode adicionar mais campos aqui */}
 
               <button
                 onClick={voltarAoFeed}
@@ -115,3 +88,4 @@ export default function PerfilCompleto() {
     </div>
   )
 }
+
