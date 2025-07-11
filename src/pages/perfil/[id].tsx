@@ -210,7 +210,7 @@ export default function PerfilCompleto() {
                         >
                     </Image>
                     {viewState.proprioPerfil && (
-                        <button     
+                        <button      
                         onClick={() => setMostrarModal(true)} 
                         className='bg-black text-white w-[200px] h-[50px] rounded-full mt-26 '
                         >Editar Perfil
