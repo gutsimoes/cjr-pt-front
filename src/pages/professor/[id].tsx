@@ -26,6 +26,7 @@ interface User {
     id: number
     nome: string
     email?: string
+    fotoPerfil?: string | null
 }
 
 interface Avaliacao {
@@ -94,6 +95,11 @@ export default function PerfilProfessor() {
     const obterNomeUsuario = (avaliacao: Avaliacao) => {
         const user = usuarios[avaliacao.userId]
         return user?.nome || `Usuário ${avaliacao.userId}`
+    }
+
+    const obterFotoUsuario = (avaliacao: Avaliacao) => {
+        const user = usuarios[avaliacao.userId]
+        return user?.fotoPerfil || null
     }
 
     const getAvatarColor = (nome: string) => {
@@ -169,9 +175,19 @@ export default function PerfilProfessor() {
                             >
                                 <div className="flex items-start gap-4">
                                     <div className={`w-12 h-12 rounded-full border-2 border-white shadow-sm flex items-center justify-center ${getAvatarColor(obterNomeUsuario(a))}`}>
-                                        <span className="text-white font-bold text-base">
-                                            {obterNomeUsuario(a).charAt(0).toUpperCase()}
-                                        </span>
+                                        {obterFotoUsuario(a) ? (
+                                            <img
+                                                src={obterFotoUsuario(a)!}
+                                                alt={obterNomeUsuario(a)}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className={`w-full h-full flex items-center justify-center ${getAvatarColor(obterNomeUsuario(a))}`}>
+                                                <span className="text-white font-bold text-base">
+                                                    {obterNomeUsuario(a).charAt(0).toUpperCase()}
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="flex-1">
