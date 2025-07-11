@@ -2,7 +2,6 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-
 interface CardProps {
     autor : string;
     professor : string;
@@ -44,7 +43,7 @@ export default function CardPublicacao({autor, professor, data, hora, conteudo, 
             <p className="text-gray-900 mt-2">{conteudo}</p>
             <div className="flex justify-between mt-2 w-full">
                 <span>
-                    <button className="text-gray">💬 {comentarios} comentários</button>
+                    <button className="text-gray">💬 {comentarios} comentário(s)</button>
                 </span>
 
                 {permissaoEditar && 

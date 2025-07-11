@@ -73,7 +73,11 @@ function formatarData(dataString?: string) {
   return data.toLocaleDateString("pt-BR")
 }
 
+
+
 export default function PerfilCompleto() {
+
+
   const router = useRouter() // rota dinamica
   const params = useParams() // Pega parâmetros 
   const id = params?.id // Pega o id 
@@ -117,7 +121,7 @@ export default function PerfilCompleto() {
         sessaoUserId,
     })
 
-    const userRequest = axios.get(`http://localhost:3001/user/public/${id}`);
+    const userRequest = axios.get(`http://localhost:3001/user/infoperfil/${id}`);
     const avaliacoesRequest = axios.get(`http://localhost:3001/avaliacao/autor/${id}`);
     const professoresRequest = axios.get(`http://localhost:3001/professor`);
     const nComentariosRequest = axios.get(`http://localhost:3001/comentario/n_comentarios`);
@@ -138,7 +142,6 @@ export default function PerfilCompleto() {
             return map;
         }, {})
 
-        console.log(disciplinasMap);
 
         const professorMap = todosProfessores.reduce((map : Record<number,string>, prof: Professor) => {
           map[prof.id] = prof.nome; 
@@ -216,10 +219,11 @@ export default function PerfilCompleto() {
 
 
                         {mostrarModal && (
-                        <ModalEditarPerfil
-                            {...usuario}
-                            onClose={() => setMostrarModal(false)}
-                        />
+                            <ModalEditarPerfil 
+                            id={usuario.id}
+                            onClose={()=> setMostrarModal(false)}
+                            onSuccess={console.log}    
+                            />
                         )}
 
 
