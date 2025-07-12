@@ -230,8 +230,8 @@ export default function PerfilCompleto() {
                 </div>
 
                     <h1 className="text-2xl font-bold mb-4 mt-4"> {usuario.nome} </h1>
-                    <h2 className='text-gray-700 mb-2'>{usuario.curso} / {usuario.departamento}</h2>
-                    <p className="text-gray-700">{usuario.email} </p>
+                    <h2 className='text-gray-700 mb-2'>🏢 {usuario.curso} / {usuario.departamento}</h2>
+                    <p className="text-gray-700">✉️ {usuario.email} </p>
 
                 </div>
 
