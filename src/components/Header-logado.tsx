@@ -19,6 +19,19 @@ export default function HeaderLogado() {
     }
   }
 
+  const handleLogoClick = () => {
+    const token = localStorage.getItem("token")
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]))
+        router.push(`/feedLogado/${payload.sub}`)
+      } catch (error) {
+        console.error("Erro ao decodificar token:", error)
+      }
+    }
+  }
+
+
   const handleLogout = () => {
     localStorage.removeItem("token")
     router.push("/")
@@ -29,9 +42,9 @@ export default function HeaderLogado() {
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
         {/* Logo */}
-        <Link href="/" className="flex items-center">
+        <button onClick={handleLogoClick} className="flex items-center">
           <img src="/logopokemon.png" alt="Logo" className="h-14 w-auto drop-shadow-lg" />
-        </Link>
+        </button>
 
         {/* Ações (ícone usuário e logout) */}
         <div className="flex items-center gap-3">
