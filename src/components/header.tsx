@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
 import HeaderLogado from "./Header-logado"
-import HeaderDeslogado from "./header-deslogado"
+import HeaderDeslogado from "./Header-deslogado"
 
 interface HeaderProps {
     userName?: string
