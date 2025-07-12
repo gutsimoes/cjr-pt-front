@@ -89,7 +89,7 @@ export default function PerfilProfessor() {
 
     const voltar = () => router.back()
     const voltarParaFeed = () => router.push(isLoggedIn ? "/feed-logado" : "/feed-deslogado")
-    const irParaAvaliacoes = () => router.push("/avaliacoes")
+    const irParaAvaliacoes = () => router.push("/comentario")
     const formatarData = (data: string) => new Date(data).toLocaleDateString("pt-BR")
 
     const obterNomeUsuario = (avaliacao: Avaliacao) => {
@@ -175,19 +175,25 @@ export default function PerfilProfessor() {
                             >
                                 <div className="flex items-start gap-4">
                                     <div className={`w-12 h-12 rounded-full border-2 border-white shadow-sm flex items-center justify-center ${getAvatarColor(obterNomeUsuario(a))}`}>
-                                        {obterFotoUsuario(a) ? (
-                                            <img
-                                                src={obterFotoUsuario(a)!}
-                                                alt={obterNomeUsuario(a)}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        ) : (
-                                            <div className={`w-full h-full flex items-center justify-center ${getAvatarColor(obterNomeUsuario(a))}`}>
-                                                <span className="text-white font-bold text-base">
-                                                    {obterNomeUsuario(a).charAt(0).toUpperCase()}
-                                                </span>
-                                            </div>
-                                        )}
+                                        <div
+                                            onClick={() => router.push(`/perfil/${a.userId}`)}
+                                            className={`w-12 h-12 rounded-full border-2 border-white shadow-sm flex items-center justify-center cursor-pointer hover:brightness-90 ${getAvatarColor(obterNomeUsuario(a))}`}
+                                        >
+                                            {obterFotoUsuario(a) ? (
+                                                <img
+                                                    src={obterFotoUsuario(a)!}
+                                                    alt={obterNomeUsuario(a)}
+                                                    className="w-full h-full object-cover rounded-full"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center">
+                                                    <span className="text-white font-bold text-base">
+                                                        {obterNomeUsuario(a).charAt(0).toUpperCase()}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+
                                     </div>
 
                                     <div className="flex-1">
