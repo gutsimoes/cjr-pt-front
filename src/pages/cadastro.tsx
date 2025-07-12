@@ -1,47 +1,49 @@
-'use client';
+"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { FiUser, FiMail, FiLock, FiBookOpen, FiHome } from "react-icons/fi";
-import { cadastrarUsuario /* , fileToBase64 */ } from "../utils/api";
-import { toast } from 'react-toastify';
+import { cadastrarUsuario, fileToBase64 } from "../utils/api";
+import { toast } from "react-toastify";
 
 export default function CadastroPage() {
-  const [nome, setNome] = useState('');
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
-  const [curso, setCurso] = useState('');
-  const [departamento, setDepartamento] = useState('');
-  // const [foto, setFoto] = useState<File | null>(null);
+  const [nome, setNome] = useState("");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [curso, setCurso] = useState("");
+  const [departamento, setDepartamento] = useState("");
+  const [foto, setFoto] = useState<File | null>(null);
+
   const [erros, setErros] = useState({
-    nome: '',
-    email: '',
-    senha: '',
-    curso: '',
-    departamento: '',
+    nome: "",
+    email: "",
+    senha: "",
+    curso: "",
+    departamento: "",
   });
 
   const router = useRouter();
 
-  // const handleImagem = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = event.target.files?.[0];
-  //   if (file) {
-  //     setFoto(file);
-  //   }
-  // };
+  const handleImagem = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setFoto(file);
+    }
+  };
 
   const validarCampos = () => {
     const novosErros: any = {};
-    if (!nome.trim()) novosErros.nome = 'Informe seu nome.';
-    if (!email.trim()) novosErros.email = 'Informe um e-mail válido.';
-    if (!senha.trim()) novosErros.senha = 'A senha é obrigatória.';
-    if (!curso.trim()) novosErros.curso = 'Informe seu curso.';
-    if (!departamento.trim()) novosErros.departamento = 'Informe seu departamento.';
+    if (!nome.trim()) novosErros.nome = "Informe seu nome.";
+    if (!email.trim()) novosErros.email = "Informe um e-mail válido.";
+    if (!senha.trim()) novosErros.senha = "A senha é obrigatória.";
+    if (!curso.trim()) novosErros.curso = "Informe seu curso.";
+    if (!departamento.trim()) novosErros.departamento = "Informe seu departamento.";
     setErros(novosErros);
 
     if (Object.keys(novosErros).length > 0) {
-      toast.error('Preencha todos os campos obrigatórios corretamente.');
+      toast.error("Preencha todos os campos obrigatórios corretamente.");
     }
 
     return Object.keys(novosErros).length === 0;
@@ -53,10 +55,10 @@ export default function CadastroPage() {
     if (!validarCampos()) return;
 
     try {
-      // let fotoBase64: string | null = null;
-      // if (foto) {
-      //   fotoBase64 = await fileToBase64(foto);
-      // }
+      let fotoBase64: string | null = null;
+      if (foto) {
+        fotoBase64 = await fileToBase64(foto);
+      }
 
       await cadastrarUsuario({
         nome,
@@ -64,29 +66,28 @@ export default function CadastroPage() {
         senha,
         curso,
         departamento,
-        // fotoPerfil: fotoBase64,
+        fotoPerfil: fotoBase64,
       });
 
-      toast.success('Usuário cadastrado com sucesso!');
+      toast.success("Usuário cadastrado com sucesso!");
       router.push("/login");
     } catch (error: any) {
-      console.error('Erro ao cadastrar:', {
+      console.error("Erro ao cadastrar:", {
         status: error?.response?.status,
         data: error?.response?.data,
         message: error?.response?.data?.message,
       });
 
       if (error.response?.status === 409) {
-        const mensagem = error.response?.data?.message || 'E-mail já cadastrado.';
+        const mensagem = error.response?.data?.message || "E-mail já cadastrado.";
         setErros((prev) => ({ ...prev, email: mensagem }));
         toast.error(mensagem);
       } else {
-        toast.error('Ocorreu um erro inesperado. Tente novamente mais tarde.');
+        toast.error("Ocorreu um erro inesperado. Tente novamente mais tarde.");
       }
     }
   };
 
-  // parte estetica
   return (
     <div className="relative min-h-screen flex overflow-hidden font-sans bg-[#0f2606]">
       <video
@@ -108,7 +109,6 @@ export default function CadastroPage() {
         >
           Fazer login
         </Link>
-
       </div>
 
       <div className="relative z-20 flex w-full md:w-1/2 h-screen items-center justify-center px-4">
@@ -116,12 +116,12 @@ export default function CadastroPage() {
           <h1 className="text-4xl font-extrabold text-white text-center mb-2 drop-shadow-lg">Seja Bem-Vindo!</h1>
           <h2 className="text-2xl font-semibold text-white text-center mb-6 drop-shadow-md">Liga dos Avaliadores</h2>
 
-          {/* Avatar comentado para testes sem imagem */}
-          {/* <div className="flex justify-center mb-6">
+          {/* Avatar com upload de imagem */}
+          <div className="flex justify-center mb-6">
             <label htmlFor="foto-perfil" className="cursor-pointer group">
               <div className="w-24 h-24 relative rounded-full overflow-hidden border-2 border-[#6B732F] shadow-md bg-white/70 group-hover:scale-105 transition-transform duration-300">
                 <Image
-                  src="/default-avatar.png"
+                  src={foto ? URL.createObjectURL(foto) : "/default-avatar.png"}
                   alt="Foto de perfil"
                   fill
                   className="object-cover"
@@ -135,10 +135,9 @@ export default function CadastroPage() {
               onChange={handleImagem}
               className="hidden"
             />
-          </div> */}
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-5 text-[#9ba796]">
-
             {/* Nome */}
             <div className="relative">
               <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B732F]" />
@@ -148,7 +147,7 @@ export default function CadastroPage() {
                 value={nome}
                 onChange={(e) => {
                   setNome(e.target.value);
-                  setErros((prev) => ({ ...prev, nome: '' }));
+                  setErros((prev) => ({ ...prev, nome: "" }));
                 }}
                 className="w-full pl-10 pr-4 py-3 rounded-full bg-white/75 text-black placeholder-[#5f6b38] font-medium border border-gray-300 focus:outline-none focus:ring-4 focus:ring-[#BB7C4E]/60"
               />
@@ -164,7 +163,7 @@ export default function CadastroPage() {
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
-                  setErros((prev) => ({ ...prev, email: '' }));
+                  setErros((prev) => ({ ...prev, email: "" }));
                 }}
                 className="w-full pl-10 pr-4 py-3 rounded-full bg-white/75 text-black placeholder-[#5f6b38] font-medium border border-gray-300 focus:outline-none focus:ring-4 focus:ring-[#BB7C4E]/60"
               />
@@ -180,7 +179,7 @@ export default function CadastroPage() {
                 value={senha}
                 onChange={(e) => {
                   setSenha(e.target.value);
-                  setErros((prev) => ({ ...prev, senha: '' }));
+                  setErros((prev) => ({ ...prev, senha: "" }));
                 }}
                 className="w-full pl-10 pr-4 py-3 rounded-full bg-white/75 text-black placeholder-[#5f6b38] font-medium border border-gray-300 focus:outline-none focus:ring-4 focus:ring-[#BB7C4E]/60"
               />
@@ -196,7 +195,7 @@ export default function CadastroPage() {
                 value={curso}
                 onChange={(e) => {
                   setCurso(e.target.value);
-                  setErros((prev) => ({ ...prev, curso: '' }));
+                  setErros((prev) => ({ ...prev, curso: "" }));
                 }}
                 className="w-full pl-10 pr-4 py-3 rounded-full bg-white/75 text-black placeholder-[#5f6b38] font-medium border border-gray-300 focus:outline-none focus:ring-4 focus:ring-[#BB7C4E]/60"
               />
@@ -212,7 +211,7 @@ export default function CadastroPage() {
                 value={departamento}
                 onChange={(e) => {
                   setDepartamento(e.target.value);
-                  setErros((prev) => ({ ...prev, departamento: '' }));
+                  setErros((prev) => ({ ...prev, departamento: "" }));
                 }}
                 className="w-full pl-10 pr-4 py-3 rounded-full bg-white/75 text-black placeholder-[#5f6b38] font-medium border border-gray-300 focus:outline-none focus:ring-4 focus:ring-[#BB7C4E]/60"
               />
