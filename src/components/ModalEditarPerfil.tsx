@@ -135,7 +135,7 @@ export default function ModalEditarPerfil({
         
         <div className="flex justify-between items-center p-6 border-b">
           <h2 className="text-xl font-bold">Editar Perfil</h2>
-          <button onClick={onClose} className="text-2xl">&times;</button>
+          <button onClick={onClose} className="text-2xl cursor-pointer">&times;</button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -238,14 +238,14 @@ export default function ModalEditarPerfil({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2 bg-gray-200 rounded hover:bg-gray-300"
+              className="cursor-pointer flex-1 py-2 bg-gray-200 rounded hover:bg-gray-300"
               disabled={isLoading}
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="flex-1 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700 disabled:opacity-50"
+              className=" cursor-pointer flex-1 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700 disabled:opacity-50"
               disabled={isLoading}
             >
               {isLoading ? 'Salvando...' : 'Salvar'}
@@ -257,7 +257,7 @@ export default function ModalEditarPerfil({
             <button
               type="button"
               onClick={() => setShowDeleteConfirmation(true)}
-              className="w-full py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+              className="w-full py-2 bg-red-600 text-white cursor-pointer rounded hover:bg-red-700 disabled:opacity-50"
               disabled={isLoading}
             >
               Excluir Perfil

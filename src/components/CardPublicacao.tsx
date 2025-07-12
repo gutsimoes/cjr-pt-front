@@ -24,7 +24,7 @@ export default function CardPublicacao({autor, professor, data, hora, conteudo, 
     const imagemSrc = fotoAutorUrl ? fotoAutorUrl : '/default-avatar.png'
     
     return (
-        <div className="rounded-lg bg-emerald-500 p-4 shadow-md">
+        <div className="rounded-lg bg-emerald-500 hover:bg-emerald-600 cursor-pointer p-4 shadow-md">
             <div className="flex space-x-5">
             <Image
                 src={imagemSrc}
