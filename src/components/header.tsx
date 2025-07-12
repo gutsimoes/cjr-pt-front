@@ -4,11 +4,10 @@ import HeaderLogado from "./Header-logado"
 import HeaderDeslogado from "./Header-deslogado"
 
 interface HeaderProps {
-    userName?: string
     onLogout?: () => void
 }
 
-function Header({ userName, onLogout }: HeaderProps) {
+function Header({ onLogout }: HeaderProps) {
     const [isLoggedIn, setIsLoggedIn] = useState(false)
     const [userInfo, setUserInfo] = useState<any>(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -32,14 +31,6 @@ function Header({ userName, onLogout }: HeaderProps) {
             if (!payload?.sub) {
                 setIsLoggedIn(false)
                 localStorage.removeItem("token") // Remove token inválido
-                setIsLoading(false)
-                return
-            }
-
-            // Se userName foi passado como prop, usar ele
-            if (userName) {
-                setUserInfo({ nome: userName })
-                setIsLoggedIn(true)
                 setIsLoading(false)
                 return
             }
@@ -101,7 +92,7 @@ function Header({ userName, onLogout }: HeaderProps) {
 
     // Renderizar header apropriado
     if (isLoggedIn && userInfo) {
-        return <HeaderLogado userName={userInfo.nome} onLogout={handleLogout} />
+        return <HeaderLogado onLogout={handleLogout} />
     } else {
         return <HeaderDeslogado />
     }
