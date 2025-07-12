@@ -1,61 +1,51 @@
-"use client";
+"use client"
+import { useState, useEffect } from "react"
+import type React from "react"
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
-import { Search } from "lucide-react";
-import Header from "../../components/Header-logado";
-import ProfessorCard from "../../components/ProfessorCard";
-import BotaoOrdenar from "../../components/botao-ordenar";
-import ModalCriarAvaliacao from "../../components/criar-avaliacao";
+import { useRouter } from "next/router"
+import { Search, MessageSquare } from "lucide-react"
+import Header from "../../components/header"
+import ProfessorCard from "../../components/ProfessorCard"
+import BotaoOrdenar from "../../components/botao-ordenar"
+import { ModalComentario } from "../../components/modal-comentario"
+import { ModalProfessor } from "../../components/modal-professor"
 
 interface Disciplina {
-  id: number;
-  nome: string;
+  id: number
+  nome: string
 }
 
 interface Professor {
-  id: number;
-  nome: string;
-  departamento: string;
-  disciplinaID: number;
-  createdAt: string;
-  updatedAt: string;
-  disciplina: Disciplina;
-  imagem?: string | null;
+  id: number
+  nome: string
+  departamento: string
+  disciplinaID: number
+  createdAt: string
+  updatedAt: string
+  disciplina: Disciplina
+  imagem?: string | null
 }
 
 export default function FeedLogado() {
-  const router = useRouter();
-  const { id } = router.query;
-  const [usuario, setUsuario] = useState<any>(null);
-  const [professores, setProfessores] = useState<Professor[]>([]);
-  const [professoresNovos, setProfessoresNovos] = useState<Professor[]>([]);
-  const [todosProfessores, setTodosProfessores] = useState<Professor[]>([]);
-  const [valorBusca, setValorBusca] = useState("");
-  const [ordenacao, setOrdenacao] = useState("nome");
-  const [isLoading, setIsLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalCriarAvaliacaoOpen, setModalCriarAvaliacaoOpen] = useState(false);
-
-  const handleAvaliacaoSuccess = () => {
-    alert("Avaliação criada com sucesso!");
-    setModalCriarAvaliacaoOpen(false);
-  };
-
-  // Campos do formulário para adicionar professor
-
-  const [nome, setNome] = useState("");
-  const [departamento, setDepartamento] = useState("");
-  const [disciplinaID, setDisciplinaID] = useState("");
+  const router = useRouter()
+  const { id } = router.query
+  const [usuario, setUsuario] = useState<any>(null)
+  const [professores, setProfessores] = useState<Professor[]>([])
+  const [professoresNovos, setProfessoresNovos] = useState<Professor[]>([])
+  const [todosProfessores, setTodosProfessores] = useState<Professor[]>([])
+  const [valorBusca, setValorBusca] = useState("")
+  const [ordenacao, setOrdenacao] = useState("nome")
+  const [isLoading, setIsLoading] = useState(true)
+  const [modalProfessorOpen, setModalProfessorOpen] = useState(false)
+  const [modalComentarioOpen, setModalComentarioOpen] = useState(false)
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const payload = token ? decodeJwtPayload(token) : null;
-
+    const token = localStorage.getItem("token")
+    const payload = token ? decodeJwtPayload(token) : null
     // Se não tiver token ou se o id do token não bate com o da URL, joga pra página de login
     if (!token || (id && String(payload?.sub) !== String(id))) {
-      router.replace("/login");
-      return;
+      router.replace("/login")
+      return
     }
 
     if (id) {
@@ -63,17 +53,18 @@ export default function FeedLogado() {
       fetch(`http://localhost:3001/user/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-        .then(async (res) => { // se der ruim, manda pro login
+        .then(async (res) => {
+          // se der ruim, manda pro login
           if (res.status === 401) {
-            router.replace("/login");
-            return;
+            router.replace("/login")
+            return
           }
-          const data = await res.json();
-          setUsuario(data); // guarda o usuário
+          const data = await res.json()
+          setUsuario(data) // guarda o usuário
         })
         .catch(() => {
-          router.replace("/login"); // se der erro, manda pro login também
-        });
+          router.replace("/login") // se der erro, manda pro login também
+        })
 
       // Pega a lista de professores
       fetch("http://localhost:3001/professor", {
@@ -81,76 +72,49 @@ export default function FeedLogado() {
       })
         .then((res) => res.json())
         .then((data) => {
-          setProfessores(data);
-          setTodosProfessores(data);
-
+          setProfessores(data)
+          setTodosProfessores(data)
           // Pega os 4 professores que chegaram por último
-          const sorted = [...data].sort(
-            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
-          setProfessoresNovos(sorted.slice(0, 4));
-          setIsLoading(false);
-        });
+          const sorted = [...data].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          setProfessoresNovos(sorted.slice(0, 4))
+          setIsLoading(false)
+        })
     }
-  }, [id, router]);
+  }, [id, router])
 
   function decodeJwtPayload(token: string): any {
     try {
-      const payload = token.split(".")[1];
-      return JSON.parse(atob(payload));
+      const payload = token.split(".")[1]
+      return JSON.parse(atob(payload))
     } catch {
-      return null;
+      return null
     }
   }
 
-  // abrir e fechar o modal
-  const handleOpenModal = () => setModalOpen(true);
-  const handleCloseModal = () => setModalOpen(false);
+  // Abrir e fechar os modais
+  const handleOpenModalProfessor = () => setModalProfessorOpen(true)
+  const handleCloseModalProfessor = () => setModalProfessorOpen(false)
+  const handleOpenModalComentario = () => setModalComentarioOpen(true)
+  const handleCloseModalComentario = () => setModalComentarioOpen(false)
+
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    router.replace("/login");
-  };
+    localStorage.removeItem("token")
+    router.replace("/login")
+  }
 
-  // fazer logout: limpa o token e joga pra tela de login
-  const handleChange = (value: string) => setValorBusca(value);
-  const handleBuscar = () => console.log("Buscar por:", valorBusca);
+  // Fazer logout: limpa o token e joga pra tela de login
+  const handleChange = (value: string) => setValorBusca(value)
+  const handleBuscar = () => console.log("Buscar por:", valorBusca)
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") handleBuscar();
-  };
+    if (e.key === "Enter") handleBuscar()
+  }
 
-  // envia o formulário para criar um professor novo
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const token = localStorage.getItem("token");
-
-    const response = await fetch("http://localhost:3001/professor", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        nome,
-        departamento,
-        disciplinaID: parseInt(disciplinaID),
-      }),
-    });
-
-    if (response.ok) {
-      alert("Professor criado com sucesso!");
-      setModalOpen(false); // fecha o modal
-      window.location.reload(); // recarrega a página pra atualizar a lista
-    } else {
-      const errorText = await response.text();
-      alert("Erro ao criar professor: " + errorText);
-    }
-  };
-
-  // Filtra a lista de professores de acordo com o que foi digitado na busca
+  // filtra a lista de professores de acordo com o que foi digitado na busca
   const professoresFiltrados = todosProfessores.filter((prof) =>
-    prof.nome.toLowerCase().includes(valorBusca.toLowerCase())
-  );
+    prof.nome.toLowerCase().includes(valorBusca.toLowerCase()),
+  )
 
+  // ordena os professores filtrados 
   const professoresOrdenados = [...professoresFiltrados].sort((a, b) => {
     switch (ordenacao) {
       case "nome":
@@ -178,37 +142,41 @@ export default function FeedLogado() {
           <p className="text-gray-600 text-center text-lg animate-pulse">Carregando usuário...</p>
         </div>
       </div>
-    );
+    )
   }
 
-  // a tela que o usuário vai ver
+  // A tela que o usuário vai ver
   return (
     <div className="min-h-screen bg-orange-50 relative">
       <Header isLoggedIn={true} userName={usuario.nome} onLogout={handleLogout} />
-
-      {/* Título de bem-vindo, usuario*/}
       <main className="relative z-0 pt-32 px-6 pb-24 max-w-7xl mx-auto space-y-32">
         <section className="text-center max-w-4xl mx-auto">
           <h1 className="text-6xl md:text-7xl font-extrabold leading-tight mb-4 tracking-tight">
-            Bem-vindo, <span className="bg-gradient-to-r from-[#ffa45d] to-amber-500 bg-clip-text text-transparent">{usuario.nome}</span>
+            Bem-vindo,{" "}
+            <span className="bg-gradient-to-r from-[#ffa45d] to-amber-500 bg-clip-text text-transparent">
+              {usuario.nome}
+            </span>
           </h1>
-          <p className="text-xl text-[#043452]/80">
-            Aqui começa a sua jornada para os melhores professores ;)
-          </p>
+          <p className="text-xl text-[#043452]/80">Aqui começa a sua jornada para os melhores professores ;)</p>
         </section>
 
-        {/* Seção dos professores mais recentes */}
         <section className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl p-8 border border-[#ffa45d]/20">
           <h2 className="text-4xl font-bold text-[#043452] mb-2">Novos Professores</h2>
           <p className="text-xl text-[#043452]/80 mb-6">Conheça os novos talentos que estão sendo avaliados</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {professoresNovos.map((prof) => (
-              <ProfessorCard key={prof.id} id={prof.id} nome={prof.nome} disciplina={prof.disciplina?.nome || "Disciplina não informada"} departamento={prof.departamento} imagem={prof.imagem || null} />
+              <ProfessorCard
+                key={prof.id}
+                id={prof.id}
+                nome={prof.nome}
+                disciplina={prof.disciplina?.nome || "Disciplina não informada"}
+                departamento={prof.departamento}
+                imagem={prof.imagem || null}
+              />
             ))}
           </div>
         </section>
 
-        {/* bloco de busca de professores com input e botão de pesquisa*/}
         <div className="relative w-full max-w-3xl lg:max-w-4xl mx-auto">
           <input
             type="text"
@@ -227,26 +195,25 @@ export default function FeedLogado() {
           </button>
         </div>
 
-        {/* botões "novo professor" e "nova avaliaçao" lado a lado*/}
-        <div className="relative w-full max-w-2xl mx-auto mt-6 flex flex-col sm:flex-row justify-center items-center gap-4">
+        {/* Botões de ação */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto">
           <button
-            onClick={handleOpenModal} // abre o modal de criação de professor
-            className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#043452] hover:bg-[#06567b] text-white font-semibold text-lg shadow-md transition-all duration-300"
+            onClick={handleOpenModalProfessor}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#043452] hover:bg-[#06567b] text-white font-semibold text-lg shadow-md transition-all duration-300"
           >
             <span className="text-xl font-bold">+</span>
             Novo Professor
           </button>
 
           <button
-            onClick={() => setModalCriarAvaliacaoOpen(true)}
-            className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#ffa45d] hover:bg-[#ff9142] text-white font-semibold text-lg shadow-md transition-all duration-300"
+            onClick={handleOpenModalComentario}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#ffa45d] hover:bg-[#ff9142] text-white font-semibold text-lg shadow-md transition-all duration-300"
           >
-            <span className="text-xl font-bold">+</span>
-            Nova Avaliação
+            <MessageSquare className="w-5 h-5" />
+            Avaliar Professor
           </button>
         </div>
 
-        {/* listagem de todos os professores e botão para ordenar*/}
         <section className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl p-8 border border-[#ffa45d]/20">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
             <div>
@@ -261,37 +228,24 @@ export default function FeedLogado() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {professoresOrdenados.map((prof) => (
-              <ProfessorCard key={prof.id} id={prof.id} nome={prof.nome} disciplina={prof.disciplina?.nome || "Disciplina não informada"} departamento={prof.departamento} imagem={prof.imagem || null} />
+              <ProfessorCard
+                key={prof.id}
+                id={prof.id}
+                nome={prof.nome}
+                disciplina={prof.disciplina?.nome || "Disciplina não informada"}
+                departamento={prof.departamento}
+                imagem={prof.imagem || null}
+              />
             ))}
           </div>
         </section>
       </main>
 
-      {modalOpen && (
-        <div className="fixed inset-0 z-50 flex justify-center items-center bg-gray-900 bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
-            <h2 className="text-2xl font-semibold text-[#043452] mb-4">Adicionar Novo Professor</h2>
-            <form onSubmit={handleSubmit}>
-              <input type="text" placeholder="Nome do Professor" value={nome} onChange={(e) => setNome(e.target.value)} className="p-3 rounded-lg w-full mb-4 border border-gray-300" />
-              <input type="text" placeholder="Departamento" value={departamento} onChange={(e) => setDepartamento(e.target.value)} className="p-3 rounded-lg w-full mb-4 border border-gray-300" />
-              <input type="number" placeholder="ID da Disciplina" value={disciplinaID} onChange={(e) => setDisciplinaID(e.target.value)} className="p-3 rounded-lg w-full mb-4 border border-gray-300" />
-              <div className="flex justify-end">
-                <button type="button" onClick={handleCloseModal} className="bg-[#ff8c2a] text-white px-6 py-2 rounded-lg">Fechar</button>
-                <button type="submit" className="bg-[#43a047] text-white px-6 py-2 rounded-lg ml-4">Adicionar</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Modal para adicionar professor */}
+      <ModalProfessor isOpen={modalProfessorOpen} onClose={handleCloseModalProfessor} />
 
-      <ModalCriarAvaliacao
-        isOpen={modalCriarAvaliacaoOpen}
-        onClose={() => setModalCriarAvaliacaoOpen(false)}
-        onSuccess={handleAvaliacaoSuccess}
-        userId={parseInt(id as string)}
-        professorId={1}
-        disciplinaId={1}
-      />
+      {/* Modal para avaliar professor */}
+      <ModalComentario isOpen={modalComentarioOpen} onClose={handleCloseModalComentario} />
     </div>
-  );
+  )
 }
