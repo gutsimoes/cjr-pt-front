@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import { User, LogOut } from "lucide-react"
+import Link from "next/link"
 
 export default function HeaderLogado() {
   const router = useRouter()
@@ -11,12 +12,25 @@ export default function HeaderLogado() {
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split(".")[1]))
-        router.push(`/perfilLogado/${payload.sub}`)
+        router.push(`/perfil/${payload.sub}`)
       } catch (error) {
         console.error("Erro ao decodificar token:", error)
       }
     }
   }
+
+  const handleLogoClick = () => {
+    const token = localStorage.getItem("token")
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]))
+        router.push(`/feedLogado/${payload.sub}`)
+      } catch (error) {
+        console.error("Erro ao decodificar token:", error)
+      }
+    }
+  }
+
 
   const handleLogout = () => {
     localStorage.removeItem("token")
@@ -28,7 +42,9 @@ export default function HeaderLogado() {
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
         {/* Logo */}
-        <img src="/logopokemon.png" alt="Logo" className="h-14 w-auto drop-shadow-lg" />
+        <button onClick={handleLogoClick} className="flex items-center">
+          <img src="/logopokemon.png" alt="Logo" className="h-14 w-auto drop-shadow-lg" />
+        </button>
 
         {/* Ações (ícone usuário e logout) */}
         <div className="flex items-center gap-3">
